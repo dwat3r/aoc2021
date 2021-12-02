@@ -14,7 +14,7 @@ fn main() {
         prev = x;
     });
     let part1 = count;
-    // println!("{}", part1);
+    println!("{}", part1);
 
     count = 0;
     let mut window = Vec::new();
