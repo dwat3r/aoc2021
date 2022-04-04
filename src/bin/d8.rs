@@ -29,7 +29,9 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
             )
         })
         .collect();
-
+    
+    println!("{}", &input);
+    
     let part1 = input
         .iter()
         .flat_map(|(_, outs)| {
@@ -55,7 +57,7 @@ fn decode_line(line: &(Vec<&str>, Vec<&str>)) -> i32 {
         v1.iter().filter(|e| !v2.contains(e)).cloned().collect()
     };
 
-    let match_to = |digit| 
+    // let match_to = |digit| 
 
     let one: Vec<char> = get_digits(2)[0];
     positions[2] = one.clone();

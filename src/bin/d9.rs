@@ -39,13 +39,13 @@ fn main() {
     .iter()
     .map(|low_point| basin(&input, *low_point).len())
     .collect::<Vec<usize>>();
-  part2.sort();
+  part2.sort_unstable();
   part2.reverse();
-  let part2: usize = part2.iter().take(3).fold(1, |acc, x| acc * x);
+  let part2: usize = part2.iter().take(3).product();
   println!("{:?}", part2);
 }
 
-fn neigh(input: &Vec<Vec<i32>>, y: usize, x: usize) -> Vec<(usize, usize, i32)> {
+fn neigh(input: &[Vec<i32>], y: usize, x: usize) -> Vec<(usize, usize, i32)> {
   let max_y = input.len();
   let max_x = input[0].len();
   let y = y as i32;
@@ -61,13 +61,9 @@ fn neigh(input: &Vec<Vec<i32>>, y: usize, x: usize) -> Vec<(usize, usize, i32)> 
     .collect()
 }
 
-fn basin(input: &Vec<Vec<i32>>, low_point: (usize, usize, i32)) -> Vec<(usize, usize, i32)> {
+fn basin(input: &[Vec<i32>], low_point: (usize, usize, i32)) -> Vec<(usize, usize, i32)> {
   let mut points: Vec<(usize, usize, i32)> = vec![];
-  fn extend(
-    input: &Vec<Vec<i32>>,
-    points: &mut Vec<(usize, usize, i32)>,
-    point: (usize, usize, i32),
-  ) {
+  fn extend(input: &[Vec<i32>], points: &mut Vec<(usize, usize, i32)>, point: (usize, usize, i32)) {
     points.push(point);
     let neighs = neigh(input, point.0, point.1);
     for n in neighs {

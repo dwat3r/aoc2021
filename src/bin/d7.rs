@@ -6,7 +6,7 @@ fn main() {
     .trim()
     .to_string();
   // let f = "16,1,2,0,4,2,7,1,2,14";
-  let input: Vec<i32> = f.split(",").map(|x| x.parse::<i32>().unwrap()).collect();
+  let input: Vec<i32> = f.split(',').map(|x| x.parse::<i32>().unwrap()).collect();
   println!("{:?}", input);
   let part1: i32 = calc_part1(&input);
   println!("{}", part1);
@@ -14,7 +14,7 @@ fn main() {
   println!("{}", part2);
 }
 
-fn calc_part1(v: &Vec<i32>) -> i32 {
+fn calc_part1(v: &[i32]) -> i32 {
   let min = *v.iter().min().expect("");
   let max = *v.iter().max().expect("");
   let v2: Vec<i32> = (min..(max + 1))
@@ -24,7 +24,7 @@ fn calc_part1(v: &Vec<i32>) -> i32 {
   *v2.iter().min().expect("")
 }
 
-fn calc_part2(v: &Vec<i32>) -> i32 {
+fn calc_part2(v: &[i32]) -> i32 {
   let min = *v.iter().min().expect("");
   let max = *v.iter().max().expect("");
   let v2: Vec<i32> = (min..(max + 1))

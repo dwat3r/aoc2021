@@ -17,6 +17,7 @@ fn main() {
   // <{([([[(<>()){}]>(<<{{
   // <{([{{}}[<[[[<>{}]]]>[]]";
 
+  // let mut input = k;
   let input = f
     .split_whitespace()
     .map(|line| line.chars().collect::<Vec<char>>())
@@ -24,7 +25,7 @@ fn main() {
   // let part1 = find_corrupted(&"{([(<{}[<>[]}>{[]{[(<()>".chars().collect::<Vec<char>>());
   let part1: i32 = input
     .iter()
-    .flat_map(|line| find_corrupted(&line))
+    .flat_map(|line| find_corrupted(line))
     .map(|c| match c {
       ')' => 3,
       ']' => 57,
@@ -36,26 +37,26 @@ fn main() {
   println!("{:?}", part1);
   let mut part2 = input
     .iter()
-    .filter(|line| find_corrupted(&line).is_none())
+    .filter(|line| find_corrupted(line).is_none())
     .map(|line| {
-      let compl = complete_line(&line);
+      let compl = complete_line(line);
       calc_score(&compl)
     })
     .collect::<Vec<i64>>();
 
-  part2.sort();
+  part2.sort_unstable();
   let middle = part2.len() / 2;
 
   println!("{:?}", part2[middle]);
 }
 
-fn find_corrupted(input: &Vec<char>) -> Option<char> {
+fn find_corrupted(input: &[char]) -> Option<char> {
   let pairs = HashMap::from([('<', '>'), ('[', ']'), ('(', ')'), ('{', '}')]);
   let mut stack = vec![];
   let mut ret = None;
   for c in input {
     // println!("{:?}", stack);
-    if pairs.keys().collect::<Vec<&char>>().contains(&&c) {
+    if pairs.keys().any(|x| x == c) {
       stack.push(c)
     } else {
       let matching = stack.pop();
@@ -63,7 +64,7 @@ fn find_corrupted(input: &Vec<char>) -> Option<char> {
         None => ret = None,
         Some(open) => {
           // println!("{} {} {:?}", c, open, pairs.get(&open));
-          if pairs.get(&open) == Some(&c) {
+          if pairs.get(open) == Some(c) {
             continue;
           } else {
             ret = Some(*c);
@@ -75,12 +76,12 @@ fn find_corrupted(input: &Vec<char>) -> Option<char> {
   ret
 }
 
-fn complete_line(input: &Vec<char>) -> Vec<char> {
+fn complete_line(input: &[char]) -> Vec<char> {
   let pairs = HashMap::from([('<', '>'), ('[', ']'), ('(', ')'), ('{', '}')]);
   let mut stack: Vec<char> = vec![];
   for c in input {
     // println!("{:?}", stack);
-    if pairs.keys().collect::<Vec<&char>>().contains(&&c) {
+    if pairs.keys().any(|x| x == c) {
       stack.push(*c)
     } else {
       let matching = stack.pop();
@@ -88,7 +89,7 @@ fn complete_line(input: &Vec<char>) -> Vec<char> {
         None => panic!("overclosing!"),
         Some(open) => {
           // println!("{} {} {:?}", c, open, pairs.get(&open));
-          if pairs.get(&open) == Some(&c) {
+          if pairs.get(&open) == Some(c) {
             continue;
           } else {
             panic!("corrupted line!");
@@ -99,13 +100,13 @@ fn complete_line(input: &Vec<char>) -> Vec<char> {
   }
   let mut ret = stack
     .into_iter()
-    .map(|c| pairs.get(&c).unwrap().clone())
+    .map(|c| *pairs.get(&c).unwrap())
     .collect::<Vec<char>>();
   ret.reverse();
   ret
 }
 
-fn calc_score(compl: &Vec<char>) -> i64 {
+fn calc_score(compl: &[char]) -> i64 {
   compl
     .iter()
     .map(|c| match c {

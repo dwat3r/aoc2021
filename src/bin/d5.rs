@@ -41,7 +41,7 @@ fn main() {
   println!("{}", part2);
 }
 
-fn calc_part1(input: &Vec<(Point, Point)>) -> usize {
+fn calc_part1(input: &[(Point, Point)]) -> usize {
   let points: Vec<&(Point, Point)> = input
     .iter()
     .filter(|(p1, p2)| p1.x == p2.x || p1.y == p2.y)
@@ -72,7 +72,7 @@ fn calc_part1(input: &Vec<(Point, Point)>) -> usize {
   overlaps.values().filter(|&&v| v > 1).count()
 }
 
-fn calc_part2(input: &Vec<(Point, Point)>) -> usize {
+fn calc_part2(input: &[(Point, Point)]) -> usize {
   let points: Vec<(i32, i32)> = input
     .iter()
     .flat_map(|(p1, p2)| {

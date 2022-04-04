@@ -32,7 +32,7 @@ fn main() {
   println!("{}", count);
 }
 
-fn get_input(f: &String) -> Vec<Vec<i32>> {
+fn get_input(f: &str) -> Vec<Vec<i32>> {
   f.split_whitespace()
     .map(|line| {
       line
@@ -43,14 +43,14 @@ fn get_input(f: &String) -> Vec<Vec<i32>> {
     .collect::<Vec<Vec<i32>>>()
 }
 
-fn neigh(input: &Vec<Vec<i32>>, y: usize, x: usize) -> Vec<(usize, usize)> {
+fn neigh(input: &[Vec<i32>], y: usize, x: usize) -> Vec<(usize, usize)> {
   let max_y = input.len();
   let max_x = input[0].len();
-  let coords = (usize::saturating_sub(y, 1)..=y + 1)
+
+  (usize::saturating_sub(y, 1)..=y + 1)
     .flat_map(|y| (usize::saturating_sub(x, 1)..=x + 1).map(move |x| (y, x)))
     .filter(|(y, x)| *y < max_y && *x < max_x)
-    .collect::<Vec<(usize, usize)>>();
-  coords
+    .collect::<Vec<(usize, usize)>>()
 }
 
 fn step(input: &mut Vec<Vec<i32>>, iterations: u32) -> u32 {
@@ -79,11 +79,11 @@ fn step(input: &mut Vec<Vec<i32>>, iterations: u32) -> u32 {
 
   for _ in 0..iterations {
     flashed.clear();
-    for y in 0..input.len() {
+    (0..input.len()).for_each(|y| {
       for x in 0..input[y].len() {
         input[y][x] += 1;
       }
-    }
+    });
     for y in 0..input.len() {
       for x in 0..input[y].len() {
         flash(y, x, input, &mut flashed, &mut flashes);

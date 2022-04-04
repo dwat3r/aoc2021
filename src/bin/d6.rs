@@ -6,7 +6,7 @@ fn main() {
     .trim()
     .to_string();
   // let f = "3,4,3,1,2";
-  let fish: Vec<i64> = f.split(",").map(|x| x.parse::<i64>().unwrap()).collect();
+  let fish: Vec<i64> = f.split(',').map(|x| x.parse::<i64>().unwrap()).collect();
   let mut i = 80;
   let mut part1: Vec<i64> = day(fish.clone());
   while i > 1 {
@@ -16,7 +16,7 @@ fn main() {
   println!("{}", part1.len());
 
   let mut i = 256;
-  let mut m = to_hm(fish.clone());
+  let mut m = to_hm(fish);
   while i > 0 {
     m = day_better(m);
     i -= 1;
@@ -52,7 +52,7 @@ fn day_better(m: HashMap<i64, i64>) -> HashMap<i64, i64> {
       *m2.entry(*fish - 1).or_insert(0) += *count;
     }
   }
-  let zeros = m.get(&0).get_or_insert(&0).clone();
+  let zeros = **m.get(&0).get_or_insert(&0);
   *m2.entry(6).or_insert(0) += zeros;
   *m2.entry(8).or_insert(0) += zeros;
   m2

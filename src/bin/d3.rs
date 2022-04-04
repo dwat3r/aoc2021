@@ -1,4 +1,4 @@
-use std::fs;
+use std::{cmp::Ordering, fs};
 
 fn main() {
   let f = fs::read_to_string("d3.txt").expect("no file");
@@ -53,7 +53,7 @@ fn main() {
 fn get_bit(n: i32, ix: i32) -> i32 {
   (n >> ix) & 1
 }
-fn common_bits(input: &Vec<i32>, ix: i32) -> (i32, i32) {
+fn common_bits(input: &[i32], ix: i32) -> (i32, i32) {
   input
     .iter()
     .map(|&n| get_bit(n, ix))
@@ -66,14 +66,12 @@ fn common_bits(input: &Vec<i32>, ix: i32) -> (i32, i32) {
     })
 }
 
-fn count_bits(input: &Vec<i32>, ix: i32, most: bool) -> i32 {
+fn count_bits(input: &[i32], ix: i32, most: bool) -> i32 {
   let (zeros, ones) = common_bits(input, ix);
-  let p = if zeros > ones {
-    0
-  } else if zeros == ones {
-    1
-  } else {
-    1
+  let p = match zeros.cmp(&ones) {
+    Ordering::Greater => 0,
+    Ordering::Equal => 1,
+    Ordering::Less => 1,
   };
   let p = if most { p } else { 1 - p };
   let ret = input

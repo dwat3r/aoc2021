@@ -28,12 +28,12 @@ fn main() {
   // 22 11 13  6  5
   //  2  0 12  3  7";
 
-  let mut input = parse(&f.to_string());
+  let mut input = parse(&f);
   // println!("{:#?}", input);
   let part1 = draw_numbers(&mut input, false);
   println!("{}", part1);
 
-  let mut input = parse(&f.to_string());
+  let mut input = parse(&f);
   println!("{}", input.numbers.len());
   // println!("{:#?}", input);
   let part2 = draw_numbers(&mut input, true);
@@ -43,8 +43,8 @@ fn draw_numbers(input: &mut Input, last: bool) -> u32 {
   let mut ret: u32 = 0;
   for number in &input.numbers {
     for board in &mut input.boards {
-      for line in &mut board.into_iter() {
-        for n in &mut line.into_iter() {
+      for line in &mut board.iter_mut() {
+        for n in &mut line.iter_mut() {
           if n.0 == *number {
             n.1 = true;
           }
@@ -53,7 +53,7 @@ fn draw_numbers(input: &mut Input, last: bool) -> u32 {
     }
     let inputc = input.clone();
     let winners = check_winner(&inputc);
-    if winners.len() > 0 {
+    if !winners.is_empty() {
       for board in winners.iter() {
         ret = board
           .iter()
@@ -71,7 +71,7 @@ fn draw_numbers(input: &mut Input, last: bool) -> u32 {
         .boards
         .clone()
         .into_iter()
-        .filter(|board| winners.iter().find(|wboard| ***wboard == *board).is_none())
+        .filter(|board| !winners.iter().any(|wboard| **wboard == *board))
         .collect::<Vec<Vec<Vec<(u32, bool)>>>>();
     }
   }
@@ -97,7 +97,7 @@ fn check_winner(input: &Input) -> Vec<&Vec<Vec<(u32, bool)>>> {
     .collect()
 }
 
-fn parse(f: &String) -> Input {
+fn parse(f: &str) -> Input {
   let numbers = f
     .split_whitespace()
     .take(1)
@@ -116,7 +116,7 @@ fn parse(f: &String) -> Input {
         .split('\n')
         .map(|line| {
           line
-            .split(" ")
+            .split(' ')
             .filter(|s| !s.is_empty())
             .map(|x| (x.trim().parse::<u32>().unwrap(), false))
             .collect::<Vec<(u32, bool)>>()

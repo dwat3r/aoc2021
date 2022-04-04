@@ -36,7 +36,7 @@ fn main() {
 
   // fold along y=7
   // fold along x=5";
-  let input = parse(&f.to_string());
+  let input = parse(&f);
   // println!("{:?}\n", input.paper);
   draw(
     input
@@ -64,9 +64,9 @@ fn draw(paper: HashSet<(u32, u32)>) {
         print!(".");
       }
     }
-    print!("\n");
+    println!();
   }
-  print!("\n");
+  println!();
 }
 fn fold(input: &Input, one: bool) -> HashSet<(u32, u32)> {
   let mut folded: HashSet<(u32, u32)> = input.paper.clone().into_iter().collect();
@@ -78,8 +78,8 @@ fn fold(input: &Input, one: bool) -> HashSet<(u32, u32)> {
         Dir::Y => y != loc,
       })
       .map(|(x, y)| match dir {
-        Dir::X => (if x > &loc { 2 * loc - x } else { *x }, *y),
-        Dir::Y => (*x, if y > &loc { 2 * loc - y } else { *y }),
+        Dir::X => (if x > loc { 2 * loc - x } else { *x }, *y),
+        Dir::Y => (*x, if y > loc { 2 * loc - y } else { *y }),
       })
       .collect::<HashSet<(u32, u32)>>();
     if one {
@@ -89,11 +89,11 @@ fn fold(input: &Input, one: bool) -> HashSet<(u32, u32)> {
   folded
 }
 
-fn parse(f: &String) -> Input {
+fn parse(f: &str) -> Input {
   let paper_re = Regex::new(r"(\d+),(\d+)").unwrap();
   let dir_re = Regex::new(r"fold along (\w)=(\d+)").unwrap();
   let paper = paper_re
-    .captures_iter(&f)
+    .captures_iter(f)
     .map(|cap| {
       cap
         .iter()
@@ -105,7 +105,7 @@ fn parse(f: &String) -> Input {
     .map(|v| (v[0], v[1]))
     .collect::<Vec<(u32, u32)>>();
   let instrs = dir_re
-    .captures_iter(&f)
+    .captures_iter(f)
     .map(|cap| {
       let dir = match &cap[1] {
         "x" => Dir::X,
@@ -117,7 +117,7 @@ fn parse(f: &String) -> Input {
     })
     .collect::<Vec<(u32, Dir)>>();
   Input {
-    paper: paper,
+    paper,
     instructions: instrs,
   }
 }
