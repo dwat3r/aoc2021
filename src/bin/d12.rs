@@ -1,5 +1,9 @@
 // use std::fs;
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    iter::{repeat, zip},
+    ops::Not,
+};
 
 type Input<'a> = HashMap<&'a str, Vec<&'a str>>;
 
@@ -14,13 +18,20 @@ A-end
 b-end";
 
     let input = get_input(f);
+    println!("{:?}", &input);
+    let part1 = list_paths(&input, "start", &vec![]);
+    println!("{:?}", &part1);
 }
 
 fn get_input(f: &str) -> Input {
     f.split_whitespace()
-        .map(|line| {
+        .flat_map(|line| {
             let r: Vec<&str> = line.split('-').collect();
-            (r[0], r[1])
+            if r[0] != "start" && r[1] != "end" {
+                vec![(r[0], r[1]), (r[1], r[0])]
+            } else {
+                vec![(r[0], r[1])]
+            }
         })
         .fold(HashMap::new(), |mut m: Input, (from, to)| {
             let tos: Vec<&str> = if let Some(tos) = m.get_mut(from) {
@@ -34,6 +45,40 @@ fn get_input(f: &str) -> Input {
         })
 }
 
-fn list_paths(input: Input) -> Vec<Vec<&str>> {
-    input
+/*
+start -> [A -> [c, b, end], b -> [d, A]]
+1.
+start, A
+start, b
+2.
+start, A, end
+start, A, c,
+start, A, b
+start, b, A,
+...
+*/
+
+fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&str>) -> Vec<Vec<&'a str>> {
+    let no_go = init
+        .iter()
+        .cloned()
+        .filter(|x| x.chars().any(|x| x.is_lowercase()) || *x != "end")
+        .collect::<Vec<&str>>();
+    let tos: Vec<&str> = input
+        .get(from)
+        .unwrap()
+        .iter()
+        .cloned()
+        .filter(|to| no_go.contains(to).not())
+        .collect();
+
+    println!("{:?} {:?}", init, tos);
+    zip(repeat(vec![from]), tos)
+        .flat_map(|(path, to)| {
+            // println!("{:?} {:?} {}", no_go, path, to);
+            let new_init = vec![path, vec![to]].concat();
+            let rest = list_paths(input, to, &new_init);
+            zip(repeat(new_init), rest).map(|(path, rest)| vec![path, rest].concat())
+        })
+        .collect()
 }
