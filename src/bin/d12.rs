@@ -19,7 +19,7 @@ b-end";
 
     let input = get_input(f);
     println!("{:?}", &input);
-    let part1 = list_paths(&input, "start", &vec![]);
+    let part1 = list_paths(&input, "start", &vec!["start"]);
     println!("{:?}", &part1);
 }
 
@@ -58,7 +58,10 @@ start, b, A,
 ...
 */
 
-fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&str>) -> Vec<Vec<&'a str>> {
+fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<Vec<&'a str>> {
+    if from == "end" {
+        return vec![vec!["end"]];
+    }
     let no_go = init
         .iter()
         .cloned()
@@ -73,12 +76,19 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&str>) -> Vec<Vec
         .collect();
 
     println!("{:?} {:?}", init, tos);
-    zip(repeat(vec![from]), tos)
-        .flat_map(|(path, to)| {
+    tos.iter()
+        .flat_map(|to| {
             // println!("{:?} {:?} {}", no_go, path, to);
-            let new_init = vec![path, vec![to]].concat();
-            let rest = list_paths(input, to, &new_init);
-            zip(repeat(new_init), rest).map(|(path, rest)| vec![path, rest].concat())
+            let mut new_init = init.clone();
+            new_init.push(to);
+            let mut rest = list_paths(input, to, &new_init);
+            rest.iter_mut()
+                .map(|res| {
+                    let mut ret = new_init.clone();
+                    ret.append(&mut *res);
+                    ret
+                })
+                .collect::<Vec<Vec<&str>>>()
         })
         .collect()
 }
