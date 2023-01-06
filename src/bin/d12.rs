@@ -1,5 +1,7 @@
 // use std::fs;
-use std::{collections::HashMap, ops::Not};
+use std::{collections::HashMap, fs, ops::Not};
+
+use itertools::Itertools;
 
 type Input<'a> = HashMap<&'a str, Vec<&'a str>>;
 
@@ -23,10 +25,48 @@ b-end";
     //     let f = "start-A
     // A-end";
     // let f = "start-end";
-    let input = get_input(f);
+    //     let f = "dc-end
+    // HN-start
+    // start-kj
+    // dc-start
+    // dc-HN
+    // LN-dc
+    // HN-end
+    // kj-sa
+    // kj-HN
+    // kj-dc";
+    //     let f = "fs-end
+    // he-DX
+    // fs-he
+    // start-DX
+    // pj-DX
+    // end-zg
+    // zg-sl
+    // zg-pj
+    // pj-he
+    // RW-he
+    // fs-DX
+    // pj-RW
+    // zg-RW
+    // start-pj
+    // he-WI
+    // zg-he
+    // pj-fs
+    // start-RW";
+    let input = get_input(&f);
     println!("{:?}", &input);
-    let part1 = list_paths(&input, "start", &vec!["start"]);
-    println!("{:?}", &part1);
+    // let part1 = list_paths(&input, "start", &vec!["start"])
+    //     .iter()
+    //     .map(|path| path.join(","))
+    //     .collect::<Vec<String>>();
+
+    // println!("{}\n{}", &part1.join("\n"), &part1.len());
+
+    let part2 = list_paths2(&input, "start", &vec!["start"])
+        .iter()
+        .map(|path| path.join(","))
+        .collect::<Vec<String>>();
+    println!("{}\n{}", &part2.join("\n"), &part2.len());
 }
 
 fn get_input(f: &str) -> Input {
@@ -71,7 +111,7 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
     let no_go = init
         .iter()
         .cloned()
-        .filter(|x| x.chars().any(|x| x.is_lowercase()) || *x != "end")
+        .filter(|x| x.chars().any(|x| x.is_lowercase()))
         .collect::<Vec<&str>>();
     let tos: Vec<&str> = input
         .get(from)
@@ -89,6 +129,56 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
             let mut new_init = init.clone();
             new_init.push(to);
             let ret = list_paths(input, to, &new_init);
+            ret
+        })
+        .collect();
+    ret
+}
+
+fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<Vec<&'a str>> {
+    if from == "end" {
+        return vec![init.clone()];
+    }
+    let small_caves = init
+        .iter()
+        .cloned()
+        .filter(|x| x.chars().any(|x| x.is_lowercase()))
+        .sorted()
+        .dedup_with_count()
+        .fold(
+            HashMap::new(),
+            |mut m: HashMap<usize, Vec<&str>>, (size, cave)| {
+                let caves: Vec<&str> = if let Some(caves) = m.get_mut(&size) {
+                    caves.push(cave);
+                    caves.to_vec()
+                } else {
+                    vec![cave]
+                };
+                m.insert(size, caves);
+                m
+            },
+        );
+    let no_go = init
+        .iter()
+        .cloned()
+        .filter(|x| x.chars().any(|x| x.is_lowercase()))
+        .collect::<Vec<&str>>();
+    let tos: Vec<&str> = input
+        .get(from)
+        .unwrap()
+        .iter()
+        .cloned()
+        .filter(|to| no_go.contains(to).not())
+        .collect();
+
+    println!("{:?} {:?}", init, tos);
+    let ret = tos
+        .iter()
+        .flat_map(|to| {
+            // println!("{:?} {:?} {}", no_go, path, to);
+            let mut new_init = init.clone();
+            new_init.push(to);
+            let ret = list_paths2(input, to, &new_init);
             ret
         })
         .collect();
