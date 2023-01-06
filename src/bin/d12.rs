@@ -1,9 +1,5 @@
 // use std::fs;
-use std::{
-    collections::HashMap,
-    iter::{repeat, zip},
-    ops::Not,
-};
+use std::{collections::HashMap, ops::Not};
 
 type Input<'a> = HashMap<&'a str, Vec<&'a str>>;
 
@@ -17,6 +13,16 @@ b-d
 A-end
 b-end";
 
+    //     let f = "start-A
+    // start-b
+    // A-b
+    // A-end
+    // b-end";
+    //         let f = "start-A
+    // A-end";
+    //     let f = "start-A
+    // A-end";
+    // let f = "start-end";
     let input = get_input(f);
     println!("{:?}", &input);
     let part1 = list_paths(&input, "start", &vec!["start"]);
@@ -60,7 +66,7 @@ start, b, A,
 
 fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<Vec<&'a str>> {
     if from == "end" {
-        return vec![vec!["end"]];
+        return vec![init.clone()];
     }
     let no_go = init
         .iter()
@@ -76,19 +82,15 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
         .collect();
 
     println!("{:?} {:?}", init, tos);
-    tos.iter()
+    let ret = tos
+        .iter()
         .flat_map(|to| {
             // println!("{:?} {:?} {}", no_go, path, to);
             let mut new_init = init.clone();
             new_init.push(to);
-            let mut rest = list_paths(input, to, &new_init);
-            rest.iter_mut()
-                .map(|res| {
-                    let mut ret = new_init.clone();
-                    ret.append(&mut *res);
-                    ret
-                })
-                .collect::<Vec<Vec<&str>>>()
+            let ret = list_paths(input, to, &new_init);
+            ret
         })
-        .collect()
+        .collect();
+    ret
 }
