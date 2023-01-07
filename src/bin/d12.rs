@@ -55,14 +55,14 @@ fn main() {
     // start-RW";
     let input = get_input(&f);
     println!("{:?}", &input);
-    let part1 = list_paths(&input, "start", &vec!["start"])
+    let part1 = list_paths(&input, "start", &["start"])
         .iter()
         .map(|path| path.join(","))
         .collect::<Vec<String>>();
 
     println!("{}\n{}", &part1.join("\n"), &part1.len());
 
-    let part2 = list_paths2(&input, "start", &vec!["start"])
+    let part2 = list_paths2(&input, "start", &["start"])
         .iter()
         .map(|path| path.join(","))
         .collect::<Vec<String>>();
@@ -104,9 +104,9 @@ start, b, A,
 ...
 */
 
-fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<Vec<&'a str>> {
+fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &[&'a str]) -> Vec<Vec<&'a str>> {
     if from == "end" {
-        return vec![init.clone()];
+        return vec![init.to_owned().clone()];
     }
     let no_go = init
         .iter()
@@ -126,7 +126,7 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
         .iter()
         .flat_map(|to| {
             // println!("{:?} {:?} {}", no_go, path, to);
-            let mut new_init = init.clone();
+            let mut new_init = init.to_owned().clone();
             new_init.push(to);
             let ret = list_paths(input, to, &new_init);
             ret
@@ -135,9 +135,9 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
     ret
 }
 
-fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<Vec<&'a str>> {
+fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &[&'a str]) -> Vec<Vec<&'a str>> {
     if from == "end" {
-        return vec![init.clone()];
+        return vec![init.to_owned().clone()];
     }
     let small_caves = init
         .iter()
@@ -187,7 +187,7 @@ fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec
         .iter()
         .flat_map(|to| {
             // println!("{:?} {:?} {}", no_go, path, to);
-            let mut new_init = init.clone();
+            let mut new_init = init.to_owned().clone();
             new_init.push(to);
             let ret = list_paths2(input, to, &new_init);
             ret
