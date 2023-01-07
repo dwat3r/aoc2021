@@ -6,14 +6,14 @@ use itertools::Itertools;
 type Input<'a> = HashMap<&'a str, Vec<&'a str>>;
 
 fn main() {
-    // let f = fs::read_to_string("d12.txt").expect("no file");
-    let f = "start-A
-start-b
-A-c
-A-b
-b-d
-A-end
-b-end";
+    let f = fs::read_to_string("d12.txt").expect("no file");
+    //     let f = "start-A
+    // start-b
+    // A-c
+    // A-b
+    // b-d
+    // A-end
+    // b-end";
 
     //     let f = "start-A
     // start-b
@@ -55,12 +55,12 @@ b-end";
     // start-RW";
     let input = get_input(&f);
     println!("{:?}", &input);
-    // let part1 = list_paths(&input, "start", &vec!["start"])
-    //     .iter()
-    //     .map(|path| path.join(","))
-    //     .collect::<Vec<String>>();
+    let part1 = list_paths(&input, "start", &vec!["start"])
+        .iter()
+        .map(|path| path.join(","))
+        .collect::<Vec<String>>();
 
-    // println!("{}\n{}", &part1.join("\n"), &part1.len());
+    println!("{}\n{}", &part1.join("\n"), &part1.len());
 
     let part2 = list_paths2(&input, "start", &vec!["start"])
         .iter()
@@ -121,7 +121,7 @@ fn list_paths<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec<
         .filter(|to| no_go.contains(to).not())
         .collect();
 
-    println!("{:?} {:?}", init, tos);
+    // println!("{:?} {:?}", init, tos);
     let ret = tos
         .iter()
         .flat_map(|to| {
@@ -161,7 +161,18 @@ fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec
     let no_go = init
         .iter()
         .cloned()
-        .filter(|x| x.chars().any(|x| x.is_lowercase()))
+        .filter(|x| {
+            let is_lowercase = x.chars().any(|x| x.is_lowercase());
+            if *x == "start" {
+                true
+            } else if small_caves.get(&2).is_some() {
+                is_lowercase
+            } else if small_caves.get(&1).filter(|one| one.contains(x)).is_some() {
+                false
+            } else {
+                is_lowercase
+            }
+        })
         .collect::<Vec<&str>>();
     let tos: Vec<&str> = input
         .get(from)
@@ -171,7 +182,7 @@ fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &Vec<&'a str>) -> Vec
         .filter(|to| no_go.contains(to).not())
         .collect();
 
-    println!("{:?} {:?}", init, tos);
+    // println!("{:?} {:?}", init, tos);
     let ret = tos
         .iter()
         .flat_map(|to| {
