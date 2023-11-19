@@ -16,16 +16,33 @@ fn main() {
 2311944581";
 
     let input = get_input(f);
-    println!("{:?}", &input);
+    let part1 = find_shortest_path(&input, 0, 0, 0);
+    println!("{:?}", part1);
 }
 
 fn find_shortest_path(input: &Input, path_weight: u32, x: usize, y: usize) -> u32 {
-    vec![x-1, x+1].iter().
-    let w = input.get(x + 1).map(|l| l.get(y)).flatten();
-    let e = input.get(x - 1).map(|l| l.get(y)).flatten();
-    let s = input.get(x).map(|l| l.get(y + 1)).flatten();
-    let n = input.get(x).map(|l| l.get(y - 1)).flatten();
+    if x == input.len() - 1 && y == input.len() - 1 {
+        return path_weight + input[x][y];
+    }
 
+    let (nx, ny, w) = vec![
+        x.checked_sub(1).map(|x| (x, y)),
+        y.checked_sub(1).map(|y| (x, y)),
+        Some((x + 1, y)),
+        Some((x, y + 1)),
+    ]
+    .into_iter()
+    .flatten()
+    .flat_map(|(x, y)| {
+        input
+            .get(x)
+            .and_then(|l| l.get(y))
+            .map(|w| (x, y, path_weight + w))
+    })
+    .max_by(|a, b| a.2.cmp(&b.2))
+    .unwrap();
+
+    find_shortest_path(input, w, nx, ny)
 }
 
 fn get_input(f: &str) -> Input {
