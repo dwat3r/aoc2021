@@ -1,5 +1,7 @@
 // use std::fs;
 
+use std::collections::HashSet;
+
 type Input = Vec<Vec<u32>>;
 
 fn main() {
@@ -15,14 +17,25 @@ fn main() {
 1293138521
 2311944581";
 
-    let input = get_input(f);
-    let part1 = find_shortest_path(&input, 0, 0, 0);
+    let part1 = part1(f);
     println!("{:?}", part1);
 }
 
-fn find_shortest_path(input: &Input, path_weight: u32, x: usize, y: usize) -> u32 {
+fn part1(f: &str) -> u32 {
+    let input = get_input(f);
+    println!("{:?}", input);
+    find_shortest_path(&input, 0, 0, 0, HashSet::from([(0, 0)]))
+}
+
+fn find_shortest_path(
+    input: &Input,
+    path_weight: u32,
+    x: usize,
+    y: usize,
+    mut visited: HashSet<(usize, usize)>,
+) -> u32 {
     if x == input.len() - 1 && y == input.len() - 1 {
-        return path_weight + input[x][y];
+        return path_weight;
     }
 
     let (nx, ny, w) = vec![
@@ -33,20 +46,44 @@ fn find_shortest_path(input: &Input, path_weight: u32, x: usize, y: usize) -> u3
     ]
     .into_iter()
     .flatten()
+    .filter(|xy| !visited.contains(xy))
     .flat_map(|(x, y)| {
         input
             .get(x)
             .and_then(|l| l.get(y))
             .map(|w| (x, y, path_weight + w))
     })
-    .max_by(|a, b| a.2.cmp(&b.2))
+    .min_by(|a, b| a.2.cmp(&b.2))
     .unwrap();
 
-    find_shortest_path(input, w, nx, ny)
+    println!("{}, {}, {} {:?}", nx, ny, w, visited);
+
+    visited.insert((nx, ny));
+    find_shortest_path(input, w, nx, ny, visited)
 }
 
 fn get_input(f: &str) -> Input {
     f.split('\n')
         .map(|x| x.chars().map(|x| x.to_digit(10).unwrap()).collect())
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic() {
+        let f = "12
+12";
+
+        assert_eq!(3, part1(f));
+    }
+    #[test]
+    fn basic2() {
+        let f = "112
+112
+112";
+        assert_eq!(5, part1(f));
+    }
 }

@@ -9,11 +9,7 @@
       "request": "launch",
       "name": "Debug executable 'd1'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d1",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d1", "--package=aoc2021"],
         "filter": {
           "name": "d1",
           "kind": "bin"
@@ -27,12 +23,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd1'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d1",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d1", "--package=aoc2021"],
         "filter": {
           "name": "d1",
           "kind": "bin"
@@ -46,11 +37,7 @@
       "request": "launch",
       "name": "Debug executable 'd10'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d10",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d10", "--package=aoc2021"],
         "filter": {
           "name": "d10",
           "kind": "bin"
@@ -64,12 +51,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd10'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d10",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d10", "--package=aoc2021"],
         "filter": {
           "name": "d10",
           "kind": "bin"
@@ -83,11 +65,7 @@
       "request": "launch",
       "name": "Debug executable 'd11'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d11",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d11", "--package=aoc2021"],
         "filter": {
           "name": "d11",
           "kind": "bin"
@@ -101,12 +79,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd11'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d11",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d11", "--package=aoc2021"],
         "filter": {
           "name": "d11",
           "kind": "bin"
@@ -120,11 +93,7 @@
       "request": "launch",
       "name": "Debug executable 'd12'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d12",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d12", "--package=aoc2021"],
         "filter": {
           "name": "d12",
           "kind": "bin"
@@ -138,12 +107,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd12'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d12",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d12", "--package=aoc2021"],
         "filter": {
           "name": "d12",
           "kind": "bin"
@@ -157,11 +121,7 @@
       "request": "launch",
       "name": "Debug executable 'd13'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d13",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d13", "--package=aoc2021"],
         "filter": {
           "name": "d13",
           "kind": "bin"
@@ -175,12 +135,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd13'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d13",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d13", "--package=aoc2021"],
         "filter": {
           "name": "d13",
           "kind": "bin"
@@ -192,13 +147,37 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug executable 'd15'",
+      "cargo": {
+        "args": ["build", "--bin=d15", "--package=aoc2021"],
+        "filter": {
+          "name": "d15",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'd15'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=d15", "--package=aoc2021"],
+        "filter": {
+          "name": "d15",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug executable 'd2'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d2",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d2", "--package=aoc2021"],
         "filter": {
           "name": "d2",
           "kind": "bin"
@@ -212,12 +191,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd2'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d2",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d2", "--package=aoc2021"],
         "filter": {
           "name": "d2",
           "kind": "bin"
@@ -231,11 +205,7 @@
       "request": "launch",
       "name": "Debug executable 'd3'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d3",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d3", "--package=aoc2021"],
         "filter": {
           "name": "d3",
           "kind": "bin"
@@ -249,12 +219,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd3'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d3",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d3", "--package=aoc2021"],
         "filter": {
           "name": "d3",
           "kind": "bin"
@@ -268,11 +233,7 @@
       "request": "launch",
       "name": "Debug executable 'd4'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d4",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d4", "--package=aoc2021"],
         "filter": {
           "name": "d4",
           "kind": "bin"
@@ -286,12 +247,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd4'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d4",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d4", "--package=aoc2021"],
         "filter": {
           "name": "d4",
           "kind": "bin"
@@ -305,11 +261,7 @@
       "request": "launch",
       "name": "Debug executable 'd5'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d5",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d5", "--package=aoc2021"],
         "filter": {
           "name": "d5",
           "kind": "bin"
@@ -323,12 +275,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd5'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d5",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d5", "--package=aoc2021"],
         "filter": {
           "name": "d5",
           "kind": "bin"
@@ -342,11 +289,7 @@
       "request": "launch",
       "name": "Debug executable 'd6'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d6",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d6", "--package=aoc2021"],
         "filter": {
           "name": "d6",
           "kind": "bin"
@@ -360,12 +303,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd6'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d6",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d6", "--package=aoc2021"],
         "filter": {
           "name": "d6",
           "kind": "bin"
@@ -379,11 +317,7 @@
       "request": "launch",
       "name": "Debug executable 'd7'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d7",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d7", "--package=aoc2021"],
         "filter": {
           "name": "d7",
           "kind": "bin"
@@ -397,12 +331,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd7'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d7",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d7", "--package=aoc2021"],
         "filter": {
           "name": "d7",
           "kind": "bin"
@@ -416,11 +345,7 @@
       "request": "launch",
       "name": "Debug executable 'd8'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d8",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d8", "--package=aoc2021"],
         "filter": {
           "name": "d8",
           "kind": "bin"
@@ -434,12 +359,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd8'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d8",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d8", "--package=aoc2021"],
         "filter": {
           "name": "d8",
           "kind": "bin"
@@ -453,11 +373,7 @@
       "request": "launch",
       "name": "Debug executable 'd9'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=d9",
-          "--package=aoc2021"
-        ],
+        "args": ["build", "--bin=d9", "--package=aoc2021"],
         "filter": {
           "name": "d9",
           "kind": "bin"
@@ -471,12 +387,7 @@
       "request": "launch",
       "name": "Debug unit tests in executable 'd9'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=d9",
-          "--package=aoc2021"
-        ],
+        "args": ["test", "--no-run", "--bin=d9", "--package=aoc2021"],
         "filter": {
           "name": "d9",
           "kind": "bin"
