@@ -1,8 +1,22 @@
 // use std::fs;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-type Input = Vec<Vec<u32>>;
+struct Node {
+    weight: u32,
+    path: u32,
+}
+
+impl std::fmt::Debug for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_list()
+            .entry(&self.weight)
+            .entry(&self.path)
+            .finish()
+    }
+}
+
+type Graph = HashMap<(usize, usize), Node>;
 
 fn main() {
     // let f = fs::read_to_string("d15.txt").expect("no file");
@@ -22,50 +36,44 @@ fn main() {
 }
 
 fn part1(f: &str) -> u32 {
-    let input = get_input(f);
-    println!("{:?}", input);
-    find_shortest_path(&input, 0, 0, 0, HashSet::from([(0, 0)]))
+    let graph = get_input(f);
+    pretty_graph(&graph);
+    find_shortest_path(&graph)
 }
 
-fn find_shortest_path(
-    input: &Input,
-    path_weight: u32,
-    x: usize,
-    y: usize,
-    mut visited: HashSet<(usize, usize)>,
-) -> u32 {
-    if x == input.len() - 1 && y == input.len() - 1 {
-        return path_weight;
-    }
+fn find_shortest_path(input: &Graph) -> u32 {
+    let (mut xi, mut yi) = (0, 0);
 
-    let (nx, ny, w) = vec![
-        x.checked_sub(1).map(|x| (x, y)),
-        y.checked_sub(1).map(|y| (x, y)),
-        Some((x + 1, y)),
-        Some((x, y + 1)),
-    ]
-    .into_iter()
-    .flatten()
-    .filter(|xy| !visited.contains(xy))
-    .flat_map(|(x, y)| {
-        input
-            .get(x)
-            .and_then(|l| l.get(y))
-            .map(|w| (x, y, path_weight + w))
-    })
-    .min_by(|a, b| a.2.cmp(&b.2))
-    .unwrap();
-
-    println!("{}, {}, {} {:?}", nx, ny, w, visited);
-
-    visited.insert((nx, ny));
-    find_shortest_path(input, w, nx, ny, visited)
+    0
 }
 
-fn get_input(f: &str) -> Input {
+fn get_input(f: &str) -> Graph {
     f.split('\n')
-        .map(|x| x.chars().map(|x| x.to_digit(10).unwrap()).collect())
-        .collect()
+        .enumerate()
+        .flat_map(|(y, xs)| {
+            xs.chars().enumerate().map(move |(x, w)| {
+                (
+                    (x, y),
+                    Node {
+                        weight: (w.to_digit(10).unwrap()),
+                        path: 0,
+                    },
+                )
+            })
+        })
+        .collect::<HashMap<(usize, usize), Node>>()
+}
+
+fn pretty_graph(graph: &Graph) {
+    let mut drawing = String::new();
+    let n = num::integer::sqrt(graph.len());
+    for y in 0..n {
+        for x in 0..n {
+            drawing = format!("{}{:?};", drawing, graph[&(x, y)]);
+        }
+        drawing.push('\n');
+    }
+    println!("{}", drawing);
 }
 
 #[cfg(test)]
@@ -81,9 +89,9 @@ mod tests {
     }
     #[test]
     fn basic2() {
-        let f = "112
-112
-112";
+        let f = "116
+138
+213";
         assert_eq!(5, part1(f));
     }
 }
