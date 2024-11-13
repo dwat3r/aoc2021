@@ -48,6 +48,7 @@ fn find_shortest_path(input: &Graph) -> u32 {
 }
 
 fn get_input(f: &str) -> Graph {
+    let graph_size = f.len() as u32;
     f.split('\n')
         .enumerate()
         .flat_map(|(y, xs)| {
@@ -56,7 +57,7 @@ fn get_input(f: &str) -> Graph {
                     (x, y),
                     Node {
                         weight: (w.to_digit(10).unwrap()),
-                        path: 0,
+                        path: graph_size * 10,
                     },
                 )
             })
