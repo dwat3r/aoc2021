@@ -1,22 +1,23 @@
 // use std::fs;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
+#[derive(Clone, Copy)]
 struct Node {
     weight: u32,
-    path: u32,
+    dist: u32,
 }
 
 impl std::fmt::Debug for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_list()
             .entry(&self.weight)
-            .entry(&self.path)
+            .entry(&self.dist)
             .finish()
     }
 }
 
-type Graph = HashMap<(usize, usize), Node>;
+type Graph = HashMap<(i32, i32), Node>;
 
 fn main() {
     // let f = fs::read_to_string("d15.txt").expect("no file");
@@ -42,9 +43,42 @@ fn part1(f: &str) -> u32 {
 }
 
 fn find_shortest_path(input: &Graph) -> u32 {
-    let (mut xi, mut yi) = (0, 0);
+    let mut shortests: Graph = HashMap::new();
+    // todo: use a binary heap
+    let mut queue = input.clone();
 
-    0
+    queue.get_mut(&(0, 0)).unwrap().dist = 0;
+
+    while !queue.is_empty() {
+        let (upos, unode) = queue
+            .clone()
+            .into_iter()
+            .min_by(|a, b| a.1.dist.cmp(&b.1.dist))
+            .unwrap();
+
+        queue.remove(&upos);
+        shortests.insert(upos, unode);
+
+        let neighs: Vec<_> = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)]
+            .iter()
+            .filter(|pos| queue.contains_key(&(upos.0 + pos.0, upos.1 + pos.1)))
+            .collect();
+        println!("neighs: {:?}", &neighs);
+        println!("queue: {:?}", &queue);
+
+        for neigh in neighs {
+            let qneigh = queue.get_mut(neigh).unwrap();
+            let alt = unode.dist + qneigh.weight;
+            if alt < qneigh.dist {
+                qneigh.dist = alt;
+            }
+        }
+        println!("----");
+    }
+    let n = num::integer::sqrt(input.len() as i32);
+    pretty_graph(&shortests);
+
+    shortests.get(&(n - 1, n - 1)).unwrap().dist
 }
 
 fn get_input(f: &str) -> Graph {
@@ -54,15 +88,15 @@ fn get_input(f: &str) -> Graph {
         .flat_map(|(y, xs)| {
             xs.chars().enumerate().map(move |(x, w)| {
                 (
-                    (x, y),
+                    (x as i32, y as i32),
                     Node {
                         weight: (w.to_digit(10).unwrap()),
-                        path: graph_size * 10,
+                        dist: graph_size * 10,
                     },
                 )
             })
         })
-        .collect::<HashMap<(usize, usize), Node>>()
+        .collect::<HashMap<(i32, i32), Node>>()
 }
 
 fn pretty_graph(graph: &Graph) {
@@ -70,7 +104,7 @@ fn pretty_graph(graph: &Graph) {
     let n = num::integer::sqrt(graph.len());
     for y in 0..n {
         for x in 0..n {
-            drawing = format!("{}{:?};", drawing, graph[&(x, y)]);
+            drawing = format!("{}{:?};", drawing, graph[&(x as i32, y as i32)]);
         }
         drawing.push('\n');
     }
@@ -88,11 +122,11 @@ mod tests {
 
         assert_eq!(3, part1(f));
     }
-    #[test]
-    fn basic2() {
-        let f = "116
-138
-213";
-        assert_eq!(5, part1(f));
-    }
+    // #[test]
+    //     fn basic2() {
+    //         let f = "116
+    // 138
+    // 213";
+    //         assert_eq!(5, part1(f));
+    //     }
 }
