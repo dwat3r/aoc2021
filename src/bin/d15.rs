@@ -63,8 +63,10 @@ fn find_shortest_path(input: &Graph) -> u32 {
             .iter()
             .filter(|pos| queue.contains_key(&(upos.0 + pos.0, upos.1 + pos.1)))
             .collect();
-        println!("neighs: {:?}", &neighs);
-        println!("queue: {:?}", &queue);
+        println!(
+            "upos: {:?}, neighs: {:?}, queue: {:?}, shortests: {:?}",
+            upos, &neighs, &queue, &shortests
+        );
 
         for neigh in neighs {
             let qneigh = queue.get_mut(neigh).unwrap();
