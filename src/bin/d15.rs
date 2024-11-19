@@ -46,6 +46,7 @@ fn find_shortest_path(input: &Graph) -> u32 {
     let mut shortests: Graph = HashMap::new();
     // todo: use a binary heap
     let mut queue = input.clone();
+    let n = num::integer::sqrt(input.len() as i32);
 
     queue.get_mut(&(0, 0)).unwrap().dist = 0;
 
@@ -58,6 +59,9 @@ fn find_shortest_path(input: &Graph) -> u32 {
 
         queue.remove(&upos);
         shortests.insert(upos, unode);
+        if upos == (n - 1, n - 1) {
+            break;
+        }
 
         let neighs: Vec<_> = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)]
             .iter()
