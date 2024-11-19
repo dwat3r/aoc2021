@@ -1,4 +1,4 @@
-// use std::fs;
+use std::fs;
 
 use std::collections::HashMap;
 
@@ -20,19 +20,19 @@ impl std::fmt::Debug for Node {
 type Graph = HashMap<(i32, i32), Node>;
 
 fn main() {
-    // let f = fs::read_to_string("d15.txt").expect("no file");
-    let f = "1163751742
-1381373672
-2136511328
-3694931569
-7463417111
-1319128137
-1359912421
-3125421639
-1293138521
-2311944581";
+    let f = fs::read_to_string("d15.txt").expect("no file");
+    //     let f = "1163751742
+    // 1381373672
+    // 2136511328
+    // 3694931569
+    // 7463417111
+    // 1319128137
+    // 1359912421
+    // 3125421639
+    // 1293138521
+    // 2311944581";
 
-    let part1 = part1(f);
+    let part1 = part1(&f);
     println!("{:?}", part1);
 }
 
@@ -64,10 +64,10 @@ fn find_shortest_path(input: &Graph) -> u32 {
             .filter(|pos| queue.contains_key(&(upos.0 + pos.0, upos.1 + pos.1)))
             .map(|pos| (upos.0 + pos.0, upos.1 + pos.1))
             .collect();
-        println!(
-            "upos: {:?}, neighs: {:?}, queue: {:?}, shortests: {:?}",
-            upos, &neighs, &queue, &shortests
-        );
+        // println!(
+        //     "upos: {:?}, neighs: {:?}, queue: {:?}, shortests: {:?}",
+        //     upos, &neighs, &queue, &shortests
+        // );
 
         for neigh in neighs {
             let qneigh = queue.get_mut(&neigh).unwrap();
@@ -76,7 +76,7 @@ fn find_shortest_path(input: &Graph) -> u32 {
                 qneigh.dist = alt;
             }
         }
-        println!("----");
+        // println!("----");
     }
     let n = num::integer::sqrt(input.len() as i32);
     pretty_graph(&shortests);
