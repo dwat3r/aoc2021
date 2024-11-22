@@ -2,7 +2,9 @@ use std::fs;
 
 use std::collections::HashMap;
 
-#[derive(Clone, Copy, PartialEq)]
+use priority_queue::PriorityQueue;
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Node {
     weight: u32,
     dist: u32,
@@ -41,50 +43,47 @@ fn part2(f: &str) -> u32 {
 }
 
 fn find_shortest_path(input: &Graph) -> u32 {
-    let mut shortests: Graph = HashMap::new();
-    // todo: use a binary heap
-    let mut queue = input.clone();
+    let mut shortests = HashMap::new();
+    let mut dists: Graph = input.clone();
+
+    let mut queue = PriorityQueue::new();
+    input.iter().for_each(|(pos, node)| {
+        queue.push(pos, node.dist);
+    });
+
     let n = get_width(input);
     println!("{}", n);
 
-    queue.get_mut(&(0, 0)).unwrap().dist = 0;
-
     while !queue.is_empty() {
-        let (upos, unode) = queue
-            .clone()
-            .into_iter()
-            .min_by(|a, b| a.1.dist.cmp(&b.1.dist))
-            .unwrap();
+        let (upos, dist) = queue.pop().unwrap();
 
-        queue.remove(&upos);
-        shortests.insert(upos, unode);
-        if upos == (n - 1, n - 1) {
+        shortests.insert(*upos, dist);
+        if *upos == (n - 1, n - 1) {
             break;
         }
 
-        let neighs: Vec<_> = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)]
+        let qneighs: Vec<_> = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)]
             .iter()
-            .filter(|pos| queue.contains_key(&(upos.0 + pos.0, upos.1 + pos.1)))
-            .map(|pos| (upos.0 + pos.0, upos.1 + pos.1))
+            .flat_map(|pos| )
             .collect();
         // println!(
         //     "upos: {:?}, neighs: {:?}, queue: {:?}, shortests: {:?}",
         //     upos, &neighs, &queue, &shortests
         // );
 
-        for neigh in neighs {
-            let qneigh = queue.get_mut(&neigh).unwrap();
-            let alt = unode.dist + qneigh.weight;
-            if alt < qneigh.dist {
-                qneigh.dist = alt;
+        for (qpos, qdist) in qneighs {
+            
+            queue.get_mut(&(upos.0 + pos.0, upos.1 + pos.1));
+            let alt = qdist + input.get(qpos).unwrap().weight;
+            if alt < *qdist {
+                queue.push_decrease(qpos, alt);
             }
         }
         // println!("----");
     }
     println!("{}", n);
-    pretty_graph(&shortests, true);
 
-    shortests.get(&(n - 1, n - 1)).unwrap().dist
+    *shortests.get(&(n - 1, n - 1)).unwrap()
 }
 
 fn get_width(graph: &Graph) -> i32 {
@@ -101,7 +100,7 @@ fn get_input(f: &str) -> Graph {
                     (x as i32, y as i32),
                     Node {
                         weight: (w.to_digit(10).unwrap()),
-                        dist: graph_size * 10,
+                        dist: if x == 0 && y == 0 { 0 } else { graph_size * 10 },
                     },
                 )
             })
