@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 itertools = "*"
 num = "0.4.3"
+priority-queue = "2.1.1"
 regex = "*"
