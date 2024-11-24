@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use std::fs;
 
 use std::collections::HashMap;
@@ -24,66 +25,73 @@ type Graph = HashMap<(i32, i32), Node>;
 fn main() {
     let f = fs::read_to_string("d15.txt").expect("no file");
 
-    // let part1 = part1(&f);
-    // println!("{:?}", part1);
+    let part1 = part1(&f);
+    println!("{:?}", part1);
     let part2 = part2(&f);
     println!("part2: {:?}", part2);
 }
 
-fn part1(f: &str) -> u32 {
+fn part1(f: &str) -> i32 {
     let graph = get_input(f);
     // pretty_graph(&graph);
     find_shortest_path(&graph)
 }
 
-fn part2(f: &str) -> u32 {
+fn part2(f: &str) -> i32 {
     let graph = get_input(f);
     let multiplied = multiply_input(&graph, 5);
     find_shortest_path(&multiplied)
 }
 
-fn find_shortest_path(input: &Graph) -> u32 {
-    let mut shortests = HashMap::new();
-    let mut dists: Graph = input.clone();
-
+fn find_shortest_path(input: &Graph) -> i32 {
+    let mut dists = HashMap::new();
     let mut queue = PriorityQueue::new();
-    input.iter().for_each(|(pos, node)| {
-        queue.push(pos, node.dist);
-    });
-
     let n = get_width(input);
-    println!("{}", n);
 
+    input.keys().for_each(|pos| {
+        queue.push(*pos, Reverse(n * n * 10));
+        dists.insert(*pos, n * n * 10);
+    });
+    queue.push((0, 0), Reverse(0));
+    dists.insert((0, 0), 0);
+
+    let mut i = 0;
     while !queue.is_empty() {
-        let (upos, dist) = queue.pop().unwrap();
+        if i % 100 == 0 {
+            println!(".");
+            i += 1;
+        };
+        let (upos, _) = queue.pop().unwrap();
 
-        shortests.insert(*upos, dist);
-        if *upos == (n - 1, n - 1) {
-            break;
-        }
-
-        let qneighs: Vec<_> = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)]
-            .iter()
-            .flat_map(|pos| )
-            .collect();
+        let neighs = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)];
         // println!(
         //     "upos: {:?}, neighs: {:?}, queue: {:?}, shortests: {:?}",
         //     upos, &neighs, &queue, &shortests
         // );
 
-        for (qpos, qdist) in qneighs {
-            
-            queue.get_mut(&(upos.0 + pos.0, upos.1 + pos.1));
-            let alt = qdist + input.get(qpos).unwrap().weight;
-            if alt < *qdist {
-                queue.push_decrease(qpos, alt);
+        for npos in neighs {
+            let vpos = &(upos.0 + npos.0, upos.1 + npos.1);
+            let udist = dists.get(&upos).unwrap();
+            let vdisto = dists.get(vpos);
+            if vdisto.is_none() {
+                continue;
+            }
+            let vdist = *vdisto.unwrap();
+            let vweight = input.get(vpos).unwrap().weight as i32;
+
+            let alt = udist + vweight;
+            if alt < vdist {
+                dists.insert(*vpos, alt);
+                queue.push_decrease(*vpos, Reverse(alt));
             }
         }
         // println!("----");
+        // if upos == (n - 1, n - 1) {
+        //     break;
+        // }
     }
-    println!("{}", n);
 
-    *shortests.get(&(n - 1, n - 1)).unwrap()
+    *dists.get(&(n - 1, n - 1)).unwrap()
 }
 
 fn get_width(graph: &Graph) -> i32 {
@@ -100,7 +108,7 @@ fn get_input(f: &str) -> Graph {
                     (x as i32, y as i32),
                     Node {
                         weight: (w.to_digit(10).unwrap()),
-                        dist: if x == 0 && y == 0 { 0 } else { graph_size * 10 },
+                        dist: graph_size * 10,
                     },
                 )
             })
@@ -191,9 +199,18 @@ mod tests {
         let f = get_input("8");
 
         let multiplied = multiply_input(&f, 5);
+        pretty_graph(&multiplied, true);
 
-        pretty_graph(&multiplied, false);
-
+        pretty_graph(
+            &get_input(
+                "89123
+91234
+12345
+23456
+34567",
+            ),
+            true,
+        );
         assert_eq!(
             multiplied,
             get_input(
