@@ -25,8 +25,8 @@ type Graph = HashMap<(i32, i32), Node>;
 fn main() {
     let f = fs::read_to_string("d15.txt").expect("no file");
 
-    // let part1 = part1(&f);
-    // println!("{:?}", part1);
+    let part1 = part1(&f);
+    println!("{:?}", part1);
     let part2 = part2(&f);
     println!("part2: {:?}", part2);
 }
@@ -55,17 +55,12 @@ fn find_shortest_path(input: &Graph) -> i32 {
     queue.push((0, 0), Reverse(0));
     dists.insert((0, 0), 0);
 
-    let mut i = 0;
     while !queue.is_empty() {
-        if i % 100 == 0 {
-            println!(".");
-            i += 1;
-        };
         let (upos, _) = queue.pop().unwrap();
 
-        if upos == (n - 1, n - 1) {
-            println!("upos: {:?};{:?}", upos, dists.get(&upos));
-        }
+        // if upos == (n - 1, n - 1) {
+        //     println!("upos: {:?};{:?}", upos, dists.get(&upos));
+        // }
         let neighs = [(1_i32, 0_i32), (0, 1), (-1, 0), (0, -1)];
 
         for npos in neighs {
@@ -80,10 +75,9 @@ fn find_shortest_path(input: &Graph) -> i32 {
             let alt = udist + vweight;
             if alt < vdist {
                 dists.insert(*vpos, alt);
-                queue.push_decrease(*vpos, Reverse(alt));
+                queue.push(*vpos, Reverse(alt));
             }
         }
-        // println!("----");
     }
 
     *dists.get(&(n - 1, n - 1)).unwrap()
