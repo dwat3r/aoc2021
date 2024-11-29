@@ -1,3 +1,4 @@
+use itertools::FoldWhile::{Continue, Done};
 use itertools::Itertools;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -19,16 +20,16 @@ fn parse_packet(f: &str) -> Literal {
 
     let version = bits_to_num(&bits[0..3]);
     let type_id = bits_to_num(&bits[3..6]);
+    let value = get_literal(&bits[6..]);
 
     Literal {
         version,
         type_id,
-        value: 0,
+        value,
     }
 }
 
 fn ascii_to_num(c: &u8) -> u8 {
-    println!("{}", c);
     if c.is_ascii_digit() {
         c - 48
     } else {
@@ -56,11 +57,22 @@ fn bits_to_num(bits: &[u8]) -> u8 {
 }
 
 fn get_literal(bits: &[u8]) -> u32 {
-    for mut chunk in &bits.into_iter().chunks(5) {
-        let read_more = chunk.next().unwrap();
-        let num = bits_to_num(&chunk.collect_vec()[..]);
-    }
-    0
+    bits.chunks(5)
+        .fold_while(Vec::new(), |mut nums, chunk| {
+            nums.push(bits_to_num(&chunk[1..]));
+            if chunk[0] == 0 {
+                Done(nums)
+            } else {
+                Continue(nums)
+            }
+        })
+        .into_inner()
+        .iter()
+        .rev()
+        .enumerate()
+        .fold(0, |num, (i, num_part)| {
+            num + ((*num_part as u32) << (i * 4))
+        })
 }
 
 #[cfg(test)]
@@ -76,6 +88,14 @@ mod tests {
     fn bits_to_num_test() {
         assert_eq!(bits_to_num(&[1, 1, 0, 1]), 13);
         assert_eq!(bits_to_num(&[1, 1, 0]), 6);
+    }
+
+    #[test]
+    fn get_literal_test() {
+        assert_eq!(
+            get_literal(&[1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1]),
+            2021
+        )
     }
     #[test]
     fn literal() {
