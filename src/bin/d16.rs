@@ -1,6 +1,3 @@
-use itertools::FoldWhile::{Continue, Done};
-use itertools::Itertools;
-
 #[derive(Debug, PartialEq, Eq)]
 enum Packet {
     Literal {
@@ -26,10 +23,11 @@ fn parse_packet(f: &str) -> Packet {
         .collect::<Vec<_>>();
     println!("{:?}", bits);
 
-    let version = bits_to_num(&bits[0..3]);
-    let type_id = bits_to_num(&bits[3..6]);
+    let version = bits_to_num(&bits[0..3]) as u8;
+    let type_id = bits_to_num(&bits[3..6]) as u8;
+
     if type_id == 4 {
-        let value = get_literal(&bits[6..]);
+        let (value, _) = get_literal(&bits[6..]);
         Literal {
             version,
             type_id,
@@ -68,30 +66,40 @@ fn num_to_bits(hex: &u8) -> Vec<u8> {
     ret
 }
 
-fn bits_to_num(bits: &[u8]) -> u8 {
+fn bits_to_num(bits: &[u8]) -> u32 {
     bits.iter()
         .rev()
         .enumerate()
-        .fold(0, |num, (i, bit)| num + (*bit << i))
+        .fold(0, |num, (i, bit)| num + ((*bit as u32) << i))
 }
 
-fn get_literal(bits: &[u8]) -> u32 {
-    bits.chunks(5)
-        .fold_while(Vec::new(), |mut nums, chunk| {
+// returns (value, remaining bits)
+fn get_literal(bits: &[u8]) -> (u32, Vec<u8>) {
+    let (nums, remaining) = bits.chunks(5).fold(
+        (Vec::new(), Vec::new()),
+        |(mut nums, mut remaining), chunk| {
             nums.push(bits_to_num(&chunk[1..]));
             if chunk[0] == 0 {
-                Done(nums)
+                remaining.push(&chunk[1..]);
+                (nums, remaining)
             } else {
-                Continue(nums)
+                (nums, remaining)
             }
-        })
-        .into_inner()
-        .iter()
-        .rev()
-        .enumerate()
-        .fold(0, |num, (i, num_part)| {
-            num + ((*num_part as u32) << (i * 4))
-        })
+        },
+    );
+
+    let num = nums.iter().rev().enumerate().fold(0, |num, (i, num_part)| {
+        num + ((*num_part as u32) << (i * 4))
+    });
+
+    (num, remaining.concat())
+}
+
+fn get_subpackets(bits: &[u8]) -> &[Packet] {
+    if bits[0] == 0 {
+        let length = bits_to_num(&bits[1..16]);
+    }
+    &[]
 }
 
 #[cfg(test)]
@@ -112,10 +120,11 @@ mod tests {
     #[test]
     fn get_literal_test() {
         assert_eq!(
-            get_literal(&[1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1]),
-            2021
+            get_literal(&[1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0]),
+            (2021, vec![0, 0, 0])
         )
     }
+
     #[test]
     fn literal() {
         let f = "D2FE28";
