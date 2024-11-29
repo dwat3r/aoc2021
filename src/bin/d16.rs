@@ -2,15 +2,23 @@ use itertools::FoldWhile::{Continue, Done};
 use itertools::Itertools;
 
 #[derive(Debug, PartialEq, Eq)]
-struct Literal {
-    version: u8,
-    type_id: u8,
-    value: u32,
+enum Packet {
+    Literal {
+        version: u8,
+        type_id: u8,
+        value: u32,
+    },
+    Operator {
+        version: u8,
+        type_id: u8,
+        sub_packets: Box<[Packet]>,
+    },
 }
+use Packet::*;
 
 fn main() {}
 
-fn parse_packet(f: &str) -> Literal {
+fn parse_packet(f: &str) -> Packet {
     let bits = f
         .as_bytes()
         .iter()
@@ -20,12 +28,23 @@ fn parse_packet(f: &str) -> Literal {
 
     let version = bits_to_num(&bits[0..3]);
     let type_id = bits_to_num(&bits[3..6]);
-    let value = get_literal(&bits[6..]);
-
-    Literal {
-        version,
-        type_id,
-        value,
+    if type_id == 4 {
+        let value = get_literal(&bits[6..]);
+        Literal {
+            version,
+            type_id,
+            value,
+        }
+    } else {
+        Operator {
+            version,
+            type_id,
+            sub_packets: Box::new([Literal {
+                version,
+                type_id,
+                value: 0,
+            }]),
+        }
     }
 }
 
@@ -107,6 +126,31 @@ mod tests {
                 version: 6,
                 type_id: 4,
                 value: 2021
+            }
+        )
+    }
+
+    #[test]
+    fn operator_1() {
+        let f = "38006F45291200";
+        let operator = parse_packet(f);
+        assert_eq!(
+            operator,
+            Operator {
+                version: 1,
+                type_id: 6,
+                sub_packets: Box::new([
+                    Literal {
+                        version: 0,
+                        type_id: 4,
+                        value: 10
+                    },
+                    Literal {
+                        version: 0,
+                        type_id: 4,
+                        value: 20
+                    }
+                ])
             }
         )
     }
