@@ -78,9 +78,7 @@ fn get_counts2(input: &Input, formula: Formula) -> u64 {
 }
 
 fn iterate2(input: &Input, n: usize) -> Formula {
-    (0..n)
-        .into_iter()
-        .fold(input.formula.clone(), |iter, _| grow2(&input.pairs, &iter))
+    (0..n).fold(input.formula.clone(), |iter, _| grow2(&input.pairs, &iter))
 }
 
 fn grow2(pairs: &Pairs, formula: &Formula) -> Formula {
@@ -89,8 +87,8 @@ fn grow2(pairs: &Pairs, formula: &Formula) -> Formula {
     formula.iter().for_each(|(pair, count)| {
         let insert = pairs.get(pair.as_str()).unwrap();
         let pair = pair.chars().collect::<Vec<_>>();
-        let first = vec![pair[0], *insert].iter().collect::<String>();
-        let second = vec![*insert, pair[1]].iter().collect::<String>();
+        let first = [pair[0], *insert].iter().collect::<String>();
+        let second = [*insert, pair[1]].iter().collect::<String>();
         new_formula
             .entry(first)
             .and_modify(|c| *c += count)
@@ -123,7 +121,7 @@ fn build_formula(input: &str) -> Formula {
     let firsts = input.chars().take(input.len() - 1);
     let seconds = input.chars().dropping(1);
     HashMap::from_iter(
-        zip(firsts, seconds).map(|(first, second)| (vec![first, second].iter().collect(), 1)),
+        zip(firsts, seconds).map(|(first, second)| ([first, second].iter().collect(), 1)),
     )
 }
 
@@ -139,11 +137,9 @@ fn get_counts(formula: String) -> usize {
 }
 
 fn iterate(input: &Input, n: usize) -> String {
-    (0..n)
-        .into_iter()
-        .fold(input.formula_str.to_owned(), |iter, _| {
-            grow(&input.pairs, &iter)
-        })
+    (0..n).fold(input.formula_str.to_owned(), |iter, _| {
+        grow(&input.pairs, &iter)
+    })
 }
 
 fn grow(pairs: &Pairs, formula: &str) -> String {
@@ -151,10 +147,10 @@ fn grow(pairs: &Pairs, formula: &str) -> String {
     let seconds = formula.chars().dropping(1);
     let mut ret = zip(firsts, seconds)
         .map(|(first, second)| {
-            let pair: String = vec![first, second].iter().collect();
+            let pair: String = [first, second].iter().collect();
             // println!("{}", pair);
             let insert = pairs.get(&pair[..]).unwrap();
-            vec![first, *insert].iter().collect()
+            [first, *insert].iter().collect()
         })
         .collect::<Vec<String>>();
     ret.push(formula.chars().last().unwrap().to_string());

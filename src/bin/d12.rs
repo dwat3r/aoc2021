@@ -165,7 +165,7 @@ fn list_paths2<'a>(input: &Input<'a>, from: &'a str, init: &[&'a str]) -> Vec<Ve
             let is_lowercase = x.chars().any(|x| x.is_lowercase());
             if *x == "start" {
                 true
-            } else if small_caves.get(&2).is_some() {
+            } else if small_caves.contains_key(&2) {
                 is_lowercase
             } else if small_caves.get(&1).filter(|one| one.contains(x)).is_some() {
                 false
