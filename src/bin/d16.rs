@@ -11,18 +11,17 @@ enum Packet {
         sub_packets: Box<[Packet]>,
     },
 }
+
 use Packet::*;
 
 fn main() {}
 
 fn parse_packet(f: &str) -> Packet {
-    let bits = f
-        .as_bytes()
-        .iter()
-        .flat_map(|c| num_to_bits(&ascii_to_num(c)))
-        .collect::<Vec<_>>();
-    println!("{:?}", bits);
+    let bits = str_to_bits(f);
+    get_packet(&bits)
+}
 
+fn get_packet(bits: &[u8]) -> Packet {
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
 
@@ -44,6 +43,16 @@ fn parse_packet(f: &str) -> Packet {
             }]),
         }
     }
+}
+
+fn str_to_bits(f: &str) -> Vec<u8> {
+    let bits = f
+        .as_bytes()
+        .iter()
+        .flat_map(|c| num_to_bits(&ascii_to_num(c)))
+        .collect::<Vec<_>>();
+    println!("{:?}", bits);
+    bits
 }
 
 fn ascii_to_num(c: &u8) -> u8 {
