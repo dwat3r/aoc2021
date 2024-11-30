@@ -1,3 +1,6 @@
+use itertools::FoldWhile::{Continue, Done};
+use itertools::Itertools;
+
 #[derive(Debug, PartialEq, Eq)]
 enum Packet {
     Literal {
@@ -8,7 +11,7 @@ enum Packet {
     Operator {
         version: u8,
         type_id: u8,
-        sub_packets: Box<[Packet]>,
+        sub_packets: Box<Vec<Packet>>,
     },
 }
 
@@ -18,30 +21,104 @@ fn main() {}
 
 fn parse_packet(f: &str) -> Packet {
     let bits = str_to_bits(f);
-    get_packet(&bits)
+    get_packet(&bits).0
 }
 
-fn get_packet(bits: &[u8]) -> Packet {
+/*
+first do it with vectors
+then do it with iterators
+*/
+
+fn get_packet(bits: &[u8]) -> (Packet, Vec<u8>) {
+    // another exit condition is when version is all zeros
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
 
     if type_id == 4 {
-        let (value, _) = get_literal(&bits[6..]);
-        Literal {
-            version,
-            type_id,
-            value,
-        }
-    } else {
-        Operator {
-            version,
-            type_id,
-            sub_packets: Box::new([Literal {
+        let (value, remaining) = get_literal(&bits[6..]);
+        (
+            Literal {
                 version,
                 type_id,
-                value: 0,
-            }]),
+                value,
+            },
+            remaining,
+        )
+    } else {
+        let (packets, remaining) = get_subpackets(&bits[6..]);
+        (
+            Operator {
+                version,
+                type_id,
+                sub_packets: Box::new(packets),
+            },
+            remaining,
+        )
+    }
+}
+/*
+110100101111111000101000
+VVVTTTAAAAABBBBBCCCCC
+*/
+// returns (value, consumed bits)
+fn get_literal(bits: &[u8]) -> (u32, u32) {
+    let (nums, consumed) = bits
+        .chunks(5)
+        .fold_while((Vec::new(), 0), |(mut nums, consumed), chunk| {
+            nums.push(bits_to_num(&chunk[1..]));
+            if chunk[0] == 0 {
+                Done((nums, consumed + 5))
+            } else {
+                Continue((nums, consumed))
+            }
+        })
+        .into_inner();
+
+    let num = nums
+        .iter()
+        .rev()
+        .enumerate()
+        .fold(0, |num, (i, num_part)| num + (*num_part << (i * 4)));
+
+    (num, consumed)
+}
+
+// // returns (value, remaining bits)
+// fn get_literal(bits: &[u8]) -> (u32,) {
+//     let mut num = 0;
+//     let iter = bits.iter();
+//     for i in 0.. {
+//         let chunk = iter.take(5).into_iter().collect::<Vec<&u8>>();
+//         num += bits_to_num(&chunk[1..]) << (i * 4);
+//         if chunk[0] == &0 {
+//             iter.take(5);
+//             break;
+//         }
+//     }
+
+//     (num, iter.len())
+// }
+
+/*
+00111000000000000110111101000101001010010001001000000000
+VVVTTTILLLLLLLLLLLLLLLAAAAAAAAAAABBBBBBBBBBBBBBBB
+                      VVVTTTAAAAAVVVTTTAAAAABBBBB
+*/
+fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, Vec<u8>) {
+    if bits[0] == 0 {
+        let mut packets = Vec::new();
+        let length = bits_to_num(&bits[1..16]) as usize;
+        let packet = get_packet(&bits[16..16 + length]);
+        packets.push(packet.0);
+        let mut remaining = packet.1;
+        while !remaining.is_empty() {
+            let packet = get_packet(&remaining);
+            packets.push(packet.0);
+            remaining = packet.1;
         }
+        (packets, remaining)
+    } else {
+        (Vec::new(), Vec::new())
     }
 }
 
@@ -82,35 +159,6 @@ fn bits_to_num(bits: &[u8]) -> u32 {
         .fold(0, |num, (i, bit)| num + ((*bit as u32) << i))
 }
 
-// returns (value, remaining bits)
-fn get_literal(bits: &[u8]) -> (u32, Vec<u8>) {
-    let (nums, remaining) = bits.chunks(5).fold(
-        (Vec::new(), Vec::new()),
-        |(mut nums, mut remaining), chunk| {
-            nums.push(bits_to_num(&chunk[1..]));
-            if chunk[0] == 0 {
-                remaining.push(&chunk[1..]);
-                (nums, remaining)
-            } else {
-                (nums, remaining)
-            }
-        },
-    );
-
-    let num = nums.iter().rev().enumerate().fold(0, |num, (i, num_part)| {
-        num + ((*num_part as u32) << (i * 4))
-    });
-
-    (num, remaining.concat())
-}
-
-fn get_subpackets(bits: &[u8]) -> &[Packet] {
-    if bits[0] == 0 {
-        let length = bits_to_num(&bits[1..16]);
-    }
-    &[]
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,7 +178,7 @@ mod tests {
     fn get_literal_test() {
         assert_eq!(
             get_literal(&[1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0]),
-            (2021, vec![0, 0, 0])
+            (2021, 15)
         )
     }
 
@@ -157,7 +205,7 @@ mod tests {
             Operator {
                 version: 1,
                 type_id: 6,
-                sub_packets: Box::new([
+                sub_packets: Box::new(vec![
                     Literal {
                         version: 0,
                         type_id: 4,
