@@ -29,7 +29,7 @@ first do it with vectors
 then do it with iterators
 */
 
-fn get_packet(bits: &[u8]) -> (Packet, Vec<u8>) {
+fn get_packet(bits: &[u8]) -> (Packet, u32) {
     // another exit condition is when version is all zeros
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
@@ -45,14 +45,14 @@ fn get_packet(bits: &[u8]) -> (Packet, Vec<u8>) {
             remaining,
         )
     } else {
-        let (packets, remaining) = get_subpackets(&bits[6..]);
+        // let (packets, remaining) = get_subpackets(&bits[6..]);
         (
             Operator {
                 version,
                 type_id,
-                sub_packets: Box::new(packets),
+                sub_packets: Box::new(vec![]),
             },
-            remaining,
+            0,
         )
     }
 }
@@ -69,7 +69,7 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
             if chunk[0] == 0 {
                 Done((nums, consumed + 5))
             } else {
-                Continue((nums, consumed))
+                Continue((nums, consumed + 5))
             }
         })
         .into_inner();
@@ -104,23 +104,23 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
 VVVTTTILLLLLLLLLLLLLLLAAAAAAAAAAABBBBBBBBBBBBBBBB
                       VVVTTTAAAAAVVVTTTAAAAABBBBB
 */
-fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, Vec<u8>) {
-    if bits[0] == 0 {
-        let mut packets = Vec::new();
-        let length = bits_to_num(&bits[1..16]) as usize;
-        let packet = get_packet(&bits[16..16 + length]);
-        packets.push(packet.0);
-        let mut remaining = packet.1;
-        while !remaining.is_empty() {
-            let packet = get_packet(&remaining);
-            packets.push(packet.0);
-            remaining = packet.1;
-        }
-        (packets, remaining)
-    } else {
-        (Vec::new(), Vec::new())
-    }
-}
+// fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, Vec<u8>) {
+//     if bits[0] == 0 {
+//         let mut packets = Vec::new();
+//         let length = bits_to_num(&bits[1..16]) as usize;
+//         let packet = get_packet(&bits[16..16 + length]);
+//         packets.push(packet.0);
+//         let mut remaining = packet.1;
+//         while !remaining.is_empty() {
+//             let packet = get_packet(&remaining);
+//             packets.push(packet.0);
+//             remaining = packet.1;
+//         }
+//         (packets, remaining)
+//     } else {
+//         (Vec::new(), Vec::new())
+//     }
+// }
 
 fn str_to_bits(f: &str) -> Vec<u8> {
     let bits = f
