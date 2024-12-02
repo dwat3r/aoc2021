@@ -108,7 +108,21 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
         }
         (packets, consumed)
     } else {
-        (Vec::new(), 0)
+        /*
+        11101110000000001101010000001100100000100011000001100000
+        VVVTTTILLLLLLLLLLLAAAAAAAAAAABBBBBBBBBBBCCCCCCCCCCC
+         */
+        let mut packets = Vec::new();
+        let packet_count = bits_to_num(&bits[1..12]);
+        let (p_packet, p_consumed) = get_packet(&bits[12..]);
+        packets.push(p_packet);
+        let mut consumed = p_consumed;
+        for _ in 1..packet_count {
+            let (p_packet, p_consumed) = get_packet(&bits[12 + consumed as usize..]);
+            packets.push(p_packet);
+            consumed += p_consumed;
+        }
+        (packets, consumed)
     }
 }
 
@@ -187,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    fn operator_1() {
+    fn operator_length_type_0() {
         let f = "38006F45291200";
         let operator = parse_packet(f);
         assert_eq!(
@@ -210,4 +224,35 @@ mod tests {
             }
         )
     }
+
+    #[test]
+    fn operator_length_type_1() {
+        let f = "EE00D40C823060";
+        let operator = parse_packet(f);
+        assert_eq!(
+            operator,
+            Operator {
+                version: 7,
+                type_id: 3,
+                sub_packets: Box::new(vec![
+                    Literal {
+                        version: 2,
+                        type_id: 4,
+                        value: 1
+                    },
+                    Literal {
+                        version: 4,
+                        type_id: 4,
+                        value: 2
+                    },
+                    Literal {
+                        version: 1,
+                        type_id: 4,
+                        value: 3
+                    }
+                ])
+            }
+        )
+    }
+    // fn operator_nested()
 }
