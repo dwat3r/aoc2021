@@ -33,26 +33,30 @@ fn get_packet(bits: &[u8]) -> (Packet, u32) {
     // another exit condition is when version is all zeros
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
+    println!(
+        "packet, bits: {:?}, version: {}, type_id: {}",
+        bits, version, type_id
+    );
 
     if type_id == 4 {
-        let (value, remaining) = get_literal(&bits[6..]);
+        let (value, consumed) = get_literal(&bits[6..]);
         (
             Literal {
                 version,
                 type_id,
                 value,
             },
-            remaining,
+            consumed + 6,
         )
     } else {
-        // let (packets, remaining) = get_subpackets(&bits[6..]);
+        let (packets, consumed) = get_subpackets(&bits[6..]);
         (
             Operator {
                 version,
                 type_id,
-                sub_packets: Box::new(vec![]),
+                sub_packets: Box::new(packets),
             },
-            0,
+            consumed + 6,
         )
     }
 }
@@ -80,47 +84,33 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
         .enumerate()
         .fold(0, |num, (i, num_part)| num + (*num_part << (i * 4)));
 
+    println!("literal, bits: {:?}, consumed: {}", bits, consumed);
     (num, consumed)
 }
 
-// // returns (value, remaining bits)
-// fn get_literal(bits: &[u8]) -> (u32,) {
-//     let mut num = 0;
-//     let iter = bits.iter();
-//     for i in 0.. {
-//         let chunk = iter.take(5).into_iter().collect::<Vec<&u8>>();
-//         num += bits_to_num(&chunk[1..]) << (i * 4);
-//         if chunk[0] == &0 {
-//             iter.take(5);
-//             break;
-//         }
-//     }
-
-//     (num, iter.len())
-// }
-
-/*
-00111000000000000110111101000101001010010001001000000000
-VVVTTTILLLLLLLLLLLLLLLAAAAAAAAAAABBBBBBBBBBBBBBBB
-                      VVVTTTAAAAAVVVTTTAAAAABBBBB
-*/
-// fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, Vec<u8>) {
-//     if bits[0] == 0 {
-//         let mut packets = Vec::new();
-//         let length = bits_to_num(&bits[1..16]) as usize;
-//         let packet = get_packet(&bits[16..16 + length]);
-//         packets.push(packet.0);
-//         let mut remaining = packet.1;
-//         while !remaining.is_empty() {
-//             let packet = get_packet(&remaining);
-//             packets.push(packet.0);
-//             remaining = packet.1;
-//         }
-//         (packets, remaining)
-//     } else {
-//         (Vec::new(), Vec::new())
-//     }
-// }
+fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
+    if bits[0] == 0 {
+        /*
+        00111000000000000110111101000101001010010001001000000000
+        VVVTTTILLLLLLLLLLLLLLLAAAAAAAAAAABBBBBBBBBBBBBBBB
+                              VVVTTTAAAAAVVVTTTAAAAABBBBB
+        */
+        let mut packets = Vec::new();
+        let length = bits_to_num(&bits[1..16]);
+        println!("bits: {:?}, len: {}", bits, length);
+        let (p_packet, p_consumed) = get_packet(&bits[16..]);
+        packets.push(p_packet);
+        let mut consumed = p_consumed;
+        while consumed < length {
+            let (p_packet, p_consumed) = get_packet(&bits[16 + consumed as usize..]);
+            packets.push(p_packet);
+            consumed += p_consumed;
+        }
+        (packets, consumed)
+    } else {
+        (Vec::new(), 0)
+    }
+}
 
 fn str_to_bits(f: &str) -> Vec<u8> {
     let bits = f
@@ -207,12 +197,12 @@ mod tests {
                 type_id: 6,
                 sub_packets: Box::new(vec![
                     Literal {
-                        version: 0,
+                        version: 6,
                         type_id: 4,
                         value: 10
                     },
                     Literal {
-                        version: 0,
+                        version: 2,
                         type_id: 4,
                         value: 20
                     }
