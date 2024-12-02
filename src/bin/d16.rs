@@ -34,8 +34,10 @@ fn get_packet(bits: &[u8]) -> (Packet, u32) {
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
     println!(
-        "packet, bits: {:?}, version: {}, type_id: {}",
-        bits, version, type_id
+        "packet, version: {}, type_id: {},  bits: {}",
+        version,
+        type_id,
+        bit_fmt(bits)
     );
 
     if type_id == 4 {
@@ -84,7 +86,7 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
         .enumerate()
         .fold(0, |num, (i, num_part)| num + (*num_part << (i * 4)));
 
-    println!("literal, bits: {:?}, consumed: {}", bits, consumed);
+    println!("literal, consumed: {}, bits: {}", consumed, bit_fmt(bits));
     (num, consumed)
 }
 
@@ -97,7 +99,7 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
         */
         let mut packets = Vec::new();
         let length = bits_to_num(&bits[1..16]);
-        println!("bits: {:?}, len: {}", bits, length);
+        println!("operator0, len: {}, bits: {},", length, bit_fmt(bits));
         let (p_packet, p_consumed) = get_packet(&bits[16..]);
         packets.push(p_packet);
         let mut consumed = p_consumed;
@@ -115,6 +117,11 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
         let mut packets = Vec::new();
         let packet_count = bits_to_num(&bits[1..12]);
         let (p_packet, p_consumed) = get_packet(&bits[12..]);
+        println!(
+            "operator1 count: {}, bits: {},",
+            packet_count,
+            bit_fmt(bits)
+        );
         packets.push(p_packet);
         let mut consumed = p_consumed;
         for _ in 1..packet_count {
@@ -132,7 +139,7 @@ fn str_to_bits(f: &str) -> Vec<u8> {
         .iter()
         .flat_map(|c| num_to_bits(&ascii_to_num(c)))
         .collect::<Vec<_>>();
-    println!("{:?}", bits);
+    println!("{}", bit_fmt(&bits));
     bits
 }
 
@@ -161,6 +168,10 @@ fn bits_to_num(bits: &[u8]) -> u32 {
         .rev()
         .enumerate()
         .fold(0, |num, (i, bit)| num + ((*bit as u32) << i))
+}
+
+fn bit_fmt(bits: &[u8]) -> String {
+    bits.iter().join("").to_string()
 }
 
 #[cfg(test)]
@@ -254,5 +265,61 @@ mod tests {
             }
         )
     }
-    // fn operator_nested()
+    #[test]
+    fn operator_nested() {
+        let f = "8A004A801A8002F478";
+        let operator = parse_packet(f);
+        assert_eq!(
+            operator,
+            Operator {
+                version: 4,
+                type_id: 2,
+                sub_packets: Box::new(vec![Operator {
+                    version: 1,
+                    type_id: 2,
+                    sub_packets: Box::new(vec![Operator {
+                        version: 5,
+                        type_id: 2,
+                        sub_packets: Box::new(vec![Literal {
+                            version: 6,
+                            type_id: 4,
+                            value: 15
+                        }])
+                    }])
+                },])
+            }
+        )
+    }
+    #[test]
+    fn operator_tree() {
+        let f = "620080001611562C8802118E34";
+        let operator = parse_packet(f);
+        assert_eq!(
+            operator,
+            Operator {
+                version: 5,
+                type_id: 0,
+                sub_packets: Box::new(vec![
+                    Operator {
+                        version: 4,
+                        type_id: 2,
+                        sub_packets: Box::new(vec![Literal {
+                            version: 4,
+                            type_id: 4,
+                            value: 12
+                        }])
+                    },
+                    Operator {
+                        version: 4,
+                        type_id: 2,
+                        sub_packets: Box::new(vec![Literal {
+                            version: 4,
+                            type_id: 4,
+                            value: 12
+                        }])
+                    }
+                ])
+            }
+        )
+    }
 }
