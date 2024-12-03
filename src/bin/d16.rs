@@ -33,12 +33,12 @@ fn get_packet(bits: &[u8]) -> (Packet, u32) {
     // another exit condition is when version is all zeros
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
-    println!(
-        "packet, version: {}, type_id: {},  bits: {}",
-        version,
-        type_id,
-        bit_fmt(bits)
-    );
+    // println!(
+    //     "packet, version: {}, type_id: {},  bits: {}",
+    //     version,
+    //     type_id,
+    //     bit_fmt(bits)
+    // );
 
     if type_id == 4 {
         let (value, consumed) = get_literal(&bits[6..]);
@@ -86,7 +86,12 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
         .enumerate()
         .fold(0, |num, (i, num_part)| num + (*num_part << (i * 4)));
 
-    println!("literal, consumed: {}, bits: {}", consumed, bit_fmt(bits));
+    println!(
+        "literal, consumed: {}, num: {}, bits: {}",
+        consumed,
+        num,
+        bit_fmt(bits)
+    );
     (num, consumed)
 }
 
@@ -108,7 +113,7 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
             packets.push(p_packet);
             consumed += p_consumed;
         }
-        (packets, consumed)
+        (packets, consumed + 16)
     } else {
         /*
         11101110000000001101010000001100100000100011000001100000
@@ -116,20 +121,21 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
          */
         let mut packets = Vec::new();
         let packet_count = bits_to_num(&bits[1..12]);
-        let (p_packet, p_consumed) = get_packet(&bits[12..]);
         println!(
             "operator1 count: {}, bits: {},",
             packet_count,
             bit_fmt(bits)
         );
+        let (p_packet, p_consumed) = get_packet(&bits[12..]);
         packets.push(p_packet);
         let mut consumed = p_consumed;
-        for _ in 1..packet_count {
+        for i in 1..packet_count {
+            println!("operator1 iteration: {}, consumed: {}", i, consumed);
             let (p_packet, p_consumed) = get_packet(&bits[12 + consumed as usize..]);
             packets.push(p_packet);
             consumed += p_consumed;
         }
-        (packets, consumed)
+        (packets, consumed + 12)
     }
 }
 
@@ -293,30 +299,49 @@ mod tests {
     #[test]
     fn operator_tree() {
         let f = "620080001611562C8802118E34";
+        /*
+         011 000 1 00000000010 000 000 0 000000000010110 000100 01010 101100 01011 001000 1 00000000010 000100 01100 011100 01101 00
+        operator1      size 2 operator0         size 22 literal   10 literal   11 operator1     size 2 literal   12 literal   13
+
+                 */
         let operator = parse_packet(f);
         assert_eq!(
             operator,
             Operator {
-                version: 5,
+                version: 3,
                 type_id: 0,
                 sub_packets: Box::new(vec![
                     Operator {
-                        version: 4,
-                        type_id: 2,
-                        sub_packets: Box::new(vec![Literal {
-                            version: 4,
-                            type_id: 4,
-                            value: 12
-                        }])
+                        version: 0,
+                        type_id: 0,
+                        sub_packets: Box::new(vec![
+                            Literal {
+                                version: 0,
+                                type_id: 4,
+                                value: 10
+                            },
+                            Literal {
+                                version: 5,
+                                type_id: 4,
+                                value: 11
+                            }
+                        ])
                     },
                     Operator {
-                        version: 4,
-                        type_id: 2,
-                        sub_packets: Box::new(vec![Literal {
-                            version: 4,
-                            type_id: 4,
-                            value: 12
-                        }])
+                        version: 1,
+                        type_id: 0,
+                        sub_packets: Box::new(vec![
+                            Literal {
+                                version: 0,
+                                type_id: 4,
+                                value: 12
+                            },
+                            Literal {
+                                version: 3,
+                                type_id: 4,
+                                value: 13
+                            }
+                        ])
                     }
                 ])
             }
