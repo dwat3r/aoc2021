@@ -8,12 +8,12 @@ enum Packet {
     Literal {
         version: u8,
         type_id: u8,
-        value: u32,
+        value: u64,
     },
     Operator {
         version: u8,
         type_id: u8,
-        sub_packets: Box<Vec<Packet>>,
+        sub_packets: Vec<Packet>,
     },
 }
 
@@ -46,7 +46,7 @@ first do it with vectors
 then do it with iterators
 */
 
-fn get_packet(bits: &[u8]) -> (Packet, u32) {
+fn get_packet(bits: &[u8]) -> (Packet, u64) {
     // another exit condition is when version is all zeros
     let version = bits_to_num(&bits[0..3]) as u8;
     let type_id = bits_to_num(&bits[3..6]) as u8;
@@ -73,7 +73,7 @@ fn get_packet(bits: &[u8]) -> (Packet, u32) {
             Operator {
                 version,
                 type_id,
-                sub_packets: Box::new(packets),
+                sub_packets: packets,
             },
             consumed + 6,
         )
@@ -84,8 +84,7 @@ fn get_packet(bits: &[u8]) -> (Packet, u32) {
 VVVTTTAAAAABBBBBCCCCC
 */
 // returns (value, consumed bits)
-fn get_literal(bits: &[u8]) -> (u32, u32) {
-    println!("literal, bits: {}", bit_fmt(bits));
+fn get_literal(bits: &[u8]) -> (u64, u64) {
     let (nums, consumed) = bits
         .chunks(5)
         .fold_while((Vec::new(), 0), |(mut nums, consumed), chunk| {
@@ -104,16 +103,16 @@ fn get_literal(bits: &[u8]) -> (u32, u32) {
         .enumerate()
         .fold(0, |num, (i, num_part)| num + (*num_part << (i * 4)));
 
-    println!(
-        "literal, consumed: {}, num: {}, bits: {}",
-        consumed,
-        num,
-        bit_fmt(bits)
-    );
+    // println!(
+    //     "literal, consumed: {}, num: {} bits: {}",
+    //     consumed,
+    //     num,
+    //     bit_fmt(bits)
+    // );
     (num, consumed)
 }
 
-fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
+fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u64) {
     if bits[0] == 0 {
         /*
         00111000000000000110111101000101001010010001001000000000
@@ -122,7 +121,7 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
         */
         let mut packets = Vec::new();
         let length = bits_to_num(&bits[1..16]);
-        println!("operator0, len: {}, bits: {},", length, bit_fmt(bits));
+        // println!("operator0, len: {}, bits: {},", length, bit_fmt(bits));
         let (p_packet, p_consumed) = get_packet(&bits[16..16 + length as usize]);
         packets.push(p_packet);
         let mut consumed = p_consumed;
@@ -140,16 +139,16 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
          */
         let mut packets = Vec::new();
         let packet_count = bits_to_num(&bits[1..12]);
-        println!(
-            "operator1 count: {}, bits: {},",
-            packet_count,
-            bit_fmt(bits)
-        );
+        // println!(
+        //     "operator1 count: {}, bits: {},",
+        //     packet_count,
+        //     bit_fmt(bits)
+        // );
         let (p_packet, p_consumed) = get_packet(&bits[12..]);
         packets.push(p_packet);
         let mut consumed = p_consumed;
         for i in 1..packet_count {
-            println!("operator1 iteration: {}, consumed: {}", i, consumed);
+            // println!("operator1 iteration: {}, consumed: {}", i, consumed);
             let (p_packet, p_consumed) = get_packet(&bits[12 + consumed as usize..]);
             packets.push(p_packet);
             consumed += p_consumed;
@@ -188,11 +187,11 @@ fn num_to_bits(hex: &u8) -> Vec<u8> {
     ret
 }
 
-fn bits_to_num(bits: &[u8]) -> u32 {
+fn bits_to_num(bits: &[u8]) -> u64 {
     bits.iter()
         .rev()
         .enumerate()
-        .fold(0, |num, (i, bit)| num + ((*bit as u32) << i))
+        .fold(0, |num, (i, bit)| num + ((*bit as u64) << i))
 }
 
 fn bit_fmt(bits: &[u8]) -> String {
@@ -245,7 +244,7 @@ mod tests {
             Operator {
                 version: 1,
                 type_id: 6,
-                sub_packets: Box::new(vec![
+                sub_packets: vec![
                     Literal {
                         version: 6,
                         type_id: 4,
@@ -256,7 +255,7 @@ mod tests {
                         type_id: 4,
                         value: 20
                     }
-                ])
+                ]
             }
         )
     }
@@ -270,7 +269,7 @@ mod tests {
             Operator {
                 version: 7,
                 type_id: 3,
-                sub_packets: Box::new(vec![
+                sub_packets: vec![
                     Literal {
                         version: 2,
                         type_id: 4,
@@ -286,7 +285,7 @@ mod tests {
                         type_id: 4,
                         value: 3
                     }
-                ])
+                ]
             }
         )
     }
@@ -299,19 +298,19 @@ mod tests {
             Operator {
                 version: 4,
                 type_id: 2,
-                sub_packets: Box::new(vec![Operator {
+                sub_packets: vec![Operator {
                     version: 1,
                     type_id: 2,
-                    sub_packets: Box::new(vec![Operator {
+                    sub_packets: vec![Operator {
                         version: 5,
                         type_id: 2,
-                        sub_packets: Box::new(vec![Literal {
+                        sub_packets: vec![Literal {
                             version: 6,
                             type_id: 4,
                             value: 15
-                        }])
-                    }])
-                },])
+                        }]
+                    }]
+                },]
             }
         )
     }
@@ -331,11 +330,11 @@ mod tests {
             Operator {
                 version: 3,
                 type_id: 0,
-                sub_packets: Box::new(vec![
+                sub_packets: vec![
                     Operator {
                         version: 0,
                         type_id: 0,
-                        sub_packets: Box::new(vec![
+                        sub_packets: vec![
                             Literal {
                                 version: 0,
                                 type_id: 4,
@@ -346,12 +345,12 @@ mod tests {
                                 type_id: 4,
                                 value: 11
                             }
-                        ])
+                        ]
                     },
                     Operator {
                         version: 1,
                         type_id: 0,
-                        sub_packets: Box::new(vec![
+                        sub_packets: vec![
                             Literal {
                                 version: 0,
                                 type_id: 4,
@@ -362,9 +361,9 @@ mod tests {
                                 type_id: 4,
                                 value: 13
                             }
-                        ])
+                        ]
                     }
-                ])
+                ]
             }
         )
     }
@@ -380,5 +379,12 @@ mod tests {
         let operator = parse_packet(f);
         let sum = version_sum(&operator);
         assert_eq!(sum, 23)
+    }
+    #[test]
+    fn operator_tree_sum_2() {
+        let f = "A0016C880162017C3686B18A3D4780";
+        let operator = parse_packet(f);
+        let sum = version_sum(&operator);
+        assert_eq!(sum, 31);
     }
 }
