@@ -1,3 +1,5 @@
+use std::fs;
+
 use itertools::FoldWhile::{Continue, Done};
 use itertools::Itertools;
 
@@ -17,7 +19,22 @@ enum Packet {
 
 use Packet::*;
 
-fn main() {}
+fn main() {
+    let f = fs::read_to_string("d16.txt").expect("no file");
+    let part1 = version_sum(&parse_packet(&f));
+    println!("part1: {}", part1);
+}
+
+fn version_sum(packet: &Packet) -> u32 {
+    match packet {
+        Packet::Literal { version, .. } => *version as u32,
+        Packet::Operator {
+            sub_packets,
+            version,
+            ..
+        } => *version as u32 + sub_packets.iter().map(version_sum).sum::<u32>(),
+    }
+}
 
 fn parse_packet(f: &str) -> Packet {
     let bits = str_to_bits(f);
@@ -68,6 +85,7 @@ VVVTTTAAAAABBBBBCCCCC
 */
 // returns (value, consumed bits)
 fn get_literal(bits: &[u8]) -> (u32, u32) {
+    println!("literal, bits: {}", bit_fmt(bits));
     let (nums, consumed) = bits
         .chunks(5)
         .fold_while((Vec::new(), 0), |(mut nums, consumed), chunk| {
@@ -105,11 +123,12 @@ fn get_subpackets(bits: &[u8]) -> (Vec<Packet>, u32) {
         let mut packets = Vec::new();
         let length = bits_to_num(&bits[1..16]);
         println!("operator0, len: {}, bits: {},", length, bit_fmt(bits));
-        let (p_packet, p_consumed) = get_packet(&bits[16..]);
+        let (p_packet, p_consumed) = get_packet(&bits[16..16 + length as usize]);
         packets.push(p_packet);
         let mut consumed = p_consumed;
         while consumed < length {
-            let (p_packet, p_consumed) = get_packet(&bits[16 + consumed as usize..]);
+            let (p_packet, p_consumed) =
+                get_packet(&bits[16 + consumed as usize..16 + length as usize]);
             packets.push(p_packet);
             consumed += p_consumed;
         }
@@ -305,6 +324,8 @@ mod tests {
 
                  */
         let operator = parse_packet(f);
+        let sum = version_sum(&operator);
+        assert_eq!(sum, 12);
         assert_eq!(
             operator,
             Operator {
@@ -346,5 +367,18 @@ mod tests {
                 ])
             }
         )
+    }
+
+    #[test]
+    fn operator_tree_sum() {
+        let f = "C0015000016115A2E0802F182340";
+        /*
+         110 000 1 00000000010 000 000 0 000000000010110 000100 01010 101100 01011 001000 1 00000000010 000100 01100 011100 01101 00
+        operator1      size 2 operator0         size 22 literal   10 literal   11 operator1     size 2 literal   12 literal   13
+
+                 */
+        let operator = parse_packet(f);
+        let sum = version_sum(&operator);
+        assert_eq!(sum, 23)
     }
 }
