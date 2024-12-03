@@ -21,8 +21,12 @@ use Packet::*;
 
 fn main() {
     let f = fs::read_to_string("d16.txt").expect("no file");
-    let part1 = version_sum(&parse_packet(&f));
+    let packet = parse_packet(&f);
+    let part1 = version_sum(&packet);
     println!("part1: {}", part1);
+
+    let part2 = evaluate(&packet);
+    println!("part2: {}", part2);
 }
 
 fn version_sum(packet: &Packet) -> u32 {
@@ -33,6 +37,47 @@ fn version_sum(packet: &Packet) -> u32 {
             version,
             ..
         } => *version as u32 + sub_packets.iter().map(version_sum).sum::<u32>(),
+    }
+}
+
+fn evaluate(packet: &Packet) -> u64 {
+    match packet {
+        Packet::Literal { value, .. } => *value,
+        Packet::Operator {
+            sub_packets,
+            type_id,
+            ..
+        } => match type_id {
+            0 => sub_packets.iter().map(evaluate).sum(),
+            1 => sub_packets.iter().map(evaluate).product(),
+            2 => sub_packets.iter().map(evaluate).min().unwrap(),
+            3 => sub_packets.iter().map(evaluate).max().unwrap(),
+            5 => {
+                let evald = sub_packets.iter().map(evaluate).collect_vec();
+                if evald[0] > evald[1] {
+                    1
+                } else {
+                    0
+                }
+            }
+            6 => {
+                let evald = sub_packets.iter().map(evaluate).collect_vec();
+                if evald[0] < evald[1] {
+                    1
+                } else {
+                    0
+                }
+            }
+            7 => {
+                let evald = sub_packets.iter().map(evaluate).collect_vec();
+                if evald[0] == evald[1] {
+                    1
+                } else {
+                    0
+                }
+            }
+            x => panic!("packet type_id {} unkown", x),
+        },
     }
 }
 
@@ -386,5 +431,21 @@ mod tests {
         let operator = parse_packet(f);
         let sum = version_sum(&operator);
         assert_eq!(sum, 31);
+    }
+
+    #[test]
+    fn evaluate_1() {
+        assert_eq!(evaluate(&parse_packet("C200B40A82")), 3);
+    }
+
+    #[test]
+    fn evaluate_2() {
+        assert_eq!(evaluate(&parse_packet("04005AC33890")), 54);
+        assert_eq!(evaluate(&parse_packet("880086C3E88112")), 7);
+        assert_eq!(evaluate(&parse_packet("CE00C43D881120")), 9);
+        assert_eq!(evaluate(&parse_packet("D8005AC2A8F0")), 1);
+        assert_eq!(evaluate(&parse_packet("F600BC2D8F")), 0);
+        assert_eq!(evaluate(&parse_packet("9C005AC2F8F0")), 0);
+        assert_eq!(evaluate(&parse_packet("9C0141080250320F1802104A08")), 1);
     }
 }
